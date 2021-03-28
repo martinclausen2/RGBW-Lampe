@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name RGBW-Lampe-eagle-import)(type Legacy)(uri ${KIPRJMOD}/RGBW-Lampe-eagle-import.lib)(options "")(descr ""))
+  (lib (name Lichtobjekt_6-eagle-import)(type Legacy)(uri "//NAS/Data/Martin/Documents/Elektronik/LED Leuchte/Lichtobjekt/Lichtobjekt Platine/Lichtobjekt_6-eagle-import.lib")(options "")(descr ""))
+  (lib (name "Lichtobjekt 6-cache")(type Legacy)(uri "//NAS/Data/Martin/Documents/Elektronik/LED Leuchte/Lichtobjekt/Lichtobjekt Platine/Lichtobjekt 6-cache.lib")(options "")(descr ""))
+  (lib (name RGBW-Lampe-rescue)(type Legacy)(uri ${KIPRJMOD}/RGBW-Lampe-rescue.lib)(options "")(descr ""))
+)
