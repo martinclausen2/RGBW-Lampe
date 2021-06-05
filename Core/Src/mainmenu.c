@@ -117,13 +117,9 @@ void MainMenu()
 							{
 							//Restore status led after preview
 							if (LightOn)
-								{
 								LEDOn();
-								}
 							else
-								{
-								LEDStandby();
-								}
+								LEDSetupStandby();
 							}
 						}
 					break;

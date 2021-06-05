@@ -145,6 +145,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
   HAL_TIM_Base_Start_IT(&htim11); //main control loop
 
+  //Start ESP32 reset pin is inverted
   HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
 
   log_serial_P("Bereit\r\n");
@@ -838,7 +839,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(AMP_SHTDN_GPIO_Port, AMP_SHTDN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(AMP_SHTDN_GPIO_Port, AMP_SHTDN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, Volume_Pin|LCD_RST_Pin|LCD_CS_Pin|LCD_A0_Pin, GPIO_PIN_RESET);

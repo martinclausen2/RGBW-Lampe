@@ -87,7 +87,7 @@ void DecodeRemote()
 
 		if (RC5Addr==rAddress)
 			{
-			if (RTbit ^ RTbitold)			//Neue Taste erkannt
+			if (RTbit ^ RTbitold)		//Neue Taste erkannt
 				{
 				switch (rCommand)
 					{
@@ -147,7 +147,7 @@ void DecodeRemote()
 	  			case RC5Cmd_AlarmStart:
 	  				if (ComModeAlarm<=ReceiverMode)
 	  					{
-	  			// TODO		Alarm();
+	  					// TODO		Alarm();
 	  					}
 	  				break;
 	  			case RC5Cmd_AlarmEnd:
