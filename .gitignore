@@ -1,0 +1,9 @@
+# STM32Cube copied library and project folders
+Drivers/*
+Debug/*
+
+# build artefacts
+*.bin
+*.elf
+*.ld
+*.o
