@@ -56,6 +56,7 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
+void ADC1_IRQHandler(void);
 void TIM11_IRQHandler(void);
 void USART1_IRQHandler(void);
 void TIM6_IRQHandler(void);
@@ -68,5 +69,3 @@ void TIM6_IRQHandler(void);
 #endif
 
 #endif /* __STM32L1xx_IT_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

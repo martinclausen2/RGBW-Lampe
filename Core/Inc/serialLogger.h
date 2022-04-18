@@ -9,10 +9,7 @@
 #define INC_SERIALLOGGER_H_
 
 #include "stm32l1xx_hal.h"
-#include "globals.h"
 #include <string.h>
-
-UART_HandleTypeDef *huart_logger;
 
 void Init_SerialLogger(UART_HandleTypeDef *huart_logger);
 

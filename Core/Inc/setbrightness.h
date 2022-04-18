@@ -8,7 +8,7 @@
 #ifndef SETBRIGHTNESS_H_
 #define SETBRIGHTNESS_H_
 
-#include "globals.h"
+#include "clock.h"
 #include "status_LED.h"
 #include <stdbool.h>
 #include "stm32l1xx_hal.h"
@@ -20,13 +20,11 @@
 #define fadetime			150
 #define MaxFocusChannel     3
 
-bool LightOn;
+extern bool LightOn;
 
-int FocusChannel;
+extern int FocusChannel;
 
-unsigned char Brightness[4];// = {0,0,0,0};	//current value
-
-TIM_HandleTypeDef *htim_PWM;				//handle to address timer
+extern unsigned char Brightness[4];// = {0,0,0,0};	//current value
 
 void PWM_Init(TIM_HandleTypeDef *htim_PWM);
 void PWM_StepDim();

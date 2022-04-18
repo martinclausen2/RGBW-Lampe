@@ -9,7 +9,7 @@
 
 uint8_t readEEPROMByte(uint32_t address)
 {
-	 uint8_t *abs_address = address + eeprom_address_offset;
+	 uint32_t *abs_address = (uint32_t *)(address + eeprom_address_offset);
 	 return *abs_address;
 }
 

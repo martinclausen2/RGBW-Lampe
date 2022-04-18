@@ -12,6 +12,17 @@ Controls Status LED
 
 #include "status_LED.h"
 
+TIM_HandleTypeDef *htim_StatusPWM;				//handle to address timer
+
+unsigned char LEDFlashCount;		//Number of flashes currently required, should not exceed 0x7F ...
+unsigned char LEDFlashSeqCounter;	//Number of flashes * 2 (on & off) to be produced in this sequence
+unsigned char LEDLimitFlashTimer;	//Software timer to decouple flashing frequency from calling frequency
+unsigned char LEDStandbyTimer;
+
+unsigned char LEDCurrentColor;
+
+unsigned char limit;
+
 void Status_LED_Init(TIM_HandleTypeDef *handle_tim)
 {
 	htim_StatusPWM = handle_tim;

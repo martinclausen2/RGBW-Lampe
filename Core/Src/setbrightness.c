@@ -7,6 +7,12 @@
 
 #include "setbrightness.h"
 
+TIM_HandleTypeDef *htim_PWM;				//handle to address timer
+
+bool LightOn;
+int FocusChannel;
+unsigned char Brightness[4];// = {0,0,0,0};	//current value
+
 unsigned char Brightness_start[] = {0x3F,0x3F,0x3F,0x3F};	//value before lights off
 unsigned int PWM_Offset[] = {0,0,0,0};   			//PWM value, where the driver effectively starts to generate an output
 unsigned int ExtBrightness_last = 0x01FFF;			//external brightness during lights off divided by 256

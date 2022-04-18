@@ -36,13 +36,15 @@ extern "C" {
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
-#include "globals.h"
 #include "serialLogger.h"
 #include "mainmenu.h"
 #include "eeprom.h"
 #include "encoder.h"
 #include "keys.h"
 #include "RC5.h"
+#include "clock.h"
+#include "settings.h"
+#include "extbrightness.h"
 
 /* USER CODE END Includes */
 
@@ -129,5 +131,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -4,6 +4,12 @@
 
 #include "RC5.h"
 
+volatile unsigned char rCommand;   	//Bitte erhalten! Wenn Befehl fertig: auswerten
+volatile unsigned char rAddress;   	//Bitte erhalten! Wenn Befehl fertig: auswerten
+volatile unsigned char rCounter;  	//Bitte erhalten!
+
+volatile bool RTbit;				//Togglebit von RC5
+
 void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 {
 	static unsigned char rc5state;
@@ -59,7 +65,7 @@ void SetLightRemote(unsigned char i, signed char steps)
 
 void SetBrightnessRemote(unsigned char i)
 {
-	if (ReceiverMode>=ComModeConditional)
+	if (GLOBAL_settings_ptr->ReceiverMode>=ComModeConditional)
 		{
 		Brightness[i]=((rCommand<<1) & 0x7E) + RTbit;
 		SetLightRemote(i,0);
@@ -85,7 +91,7 @@ void DecodeRemote()
 		sprintf(serial_Buffer,"RC5 Addr %d Cmd %d\r\n", rAddress, rCommand);
 		log_serial(serial_Buffer);
 
-		if (RC5Addr==rAddress)
+		if (GLOBAL_settings_ptr->RC5Addr==rAddress)
 			{
 			if (RTbit ^ RTbitold)		//Neue Taste erkannt
 				{
@@ -145,25 +151,25 @@ void DecodeRemote()
 	  		switch (rCommand)
 	  			{
 	  			case RC5Cmd_AlarmStart:
-	  				if (ComModeAlarm<=ReceiverMode)
+	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
 	  					{
 	  					// TODO		Alarm();
 	  					}
 	  				break;
 	  			case RC5Cmd_AlarmEnd:
-	  				if (ComModeAlarm<=ReceiverMode)
+	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
 	  					{
 	  					// TODO		AlarmEnd();
 	  					}
 	  				break;
 	  			case RC5Cmd_Off:
-					if (ComModeConditional<=ReceiverMode)
+					if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
 						{
 						SwAllLightOff();
 						}
 	  				break;
 	  			case RC5Cmd_On:
-					if (ComModeConditional<=ReceiverMode)
+					if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
 						{
 						SwAllLightOn();
 						}
