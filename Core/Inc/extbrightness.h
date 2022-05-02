@@ -9,15 +9,18 @@
 #define EXTBRIGHTNESS_H_
 
 #include "stm32l1xx_hal.h"
+#include "main.h"
 
 #define extbrightness_ADC_RANK 1
 
 #define minphotoamp		 100
 #define maxphotoamp		3000
+
+//must match bit field below
 #define minphotogain	0b00
 #define maxphotogain	0b10
 
-// define the bitfield
+// define the bit field
 typedef union {
 	struct {
 		unsigned ALL:8;

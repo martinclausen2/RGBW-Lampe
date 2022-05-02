@@ -878,7 +878,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, Volume_Pin|LCD_RST_Pin|LCD_CS_Pin|LCD_A0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ESP_RST_Pin|BRIGHT_HIGH_Pin|BRIGHT_LOW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, BRIGHT_HIGH_Pin|BRIGHT_LOW_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : AMP_SHTDN_Pin */
   GPIO_InitStruct.Pin = AMP_SHTDN_Pin;
@@ -929,10 +932,11 @@ else if (htim->Instance == htim11.Instance)
 }
 }
 
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    // Read & Update The ADC Result
+    // Read & Update the ADC Result
+	// assumption: ADC only used for brightness measurement,
+	// otherwise insert code for branching according to interrupt source here
 	AddValue_ExtBrightness(hadc);
 }
 /* USER CODE END 4 */

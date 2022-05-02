@@ -9,8 +9,9 @@
  * divide result by number of data points of the moving average
  * maximum filter size = 2^32 / 2^8 / 1000 = 167777 datapoints
  * result is found in the unsigned long ExtBrightness
+ *
+ * BRIGHT_LOW_Pin and BRIGHT_HIGH_Pin must be set to high via the device configuration
 */
-
 
 #include "extbrightness.h"
 
@@ -25,6 +26,7 @@ const unsigned int photoampfactor[] = {1, 30, 1000};
 
 void Init_ExtBrightness(ADC_HandleTypeDef *handle_adc)
 {
+	//
 	hadc_extbrightness = handle_adc;
 }
 
@@ -33,24 +35,50 @@ void Sample_ExtBrightness()
     HAL_ADC_Start_IT(hadc_extbrightness);
 }
 
+// set pin to output or analog input to imitate open source output not available on STM32
+void SetPinStatus(bool pin_status, GPIO_InitTypeDef *GPIO_InitStruct) {
+	if (pin_status) {
+		GPIO_InitStruct->Mode = GPIO_MODE_OUTPUT_PP;
+		HAL_GPIO_Init(GPIOB, &*GPIO_InitStruct);
+	} else {
+		GPIO_InitStruct->Mode = GPIO_MODE_ANALOG;
+		HAL_GPIO_Init(GPIOB, &*GPIO_InitStruct);
+	}
+}
+
+// Adjust gain setting
+void AdjustGain(PhotoGain_t PhotoGain) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+	GPIO_InitStruct.Pin = BRIGHT_LOW_Pin;
+	_Bool pin_status = PhotoGain.LSB;
+	SetPinStatus(pin_status, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = BRIGHT_HIGH_Pin;
+	pin_status = PhotoGain.MSB;
+	SetPinStatus(pin_status, &GPIO_InitStruct);
+}
+
 void AddValue_ExtBrightness(ADC_HandleTypeDef *handle_adc)
 {
+	// check if value was created by sampling the brightness ADC input channel
 	if (handle_adc->Instance == hadc_extbrightness->Instance && handle_adc->NbrOfConversionRank == extbrightness_ADC_RANK)
 	{
 		int ADC_Result = HAL_ADC_GetValue(hadc_extbrightness);
-		extBrightness -= (extBrightness >> 6);		//in the meantime: remove a 1/64 so we have a moving average over 64 datapoints
+		extBrightness -= (extBrightness >> 6);		//in the meantime: remove a 1/64 so we have a moving average over 64 data points
 		extBrightness += ADC_Result * photoampfactor[PhotoGain.ALL];
 		if ((maxphotoamp < ADC_Result) && (maxphotogain > PhotoGain.ALL))
 			{
 			++PhotoGain.ALL;
+	    	AdjustGain(PhotoGain);
 			}
 		else if ((minphotoamp > ADC_Result) && (minphotogain < PhotoGain.ALL))
 			{
 			--PhotoGain.ALL;
+	    	AdjustGain(PhotoGain);
 			}
-
-		//P0_6 = PhotoGain.LSB;		//set gain
-		//P0_7 = PhotoGain.MSB;
 	}
 }
 
