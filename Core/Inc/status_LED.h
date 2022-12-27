@@ -6,6 +6,7 @@ Controls Status RGB LED
 #define __StatusLED_H_GUARD
 
 #include "stm32l1xx_hal.h"
+#include "extbrightness.h"
 
 #define LEDFlashMaxSeq	8	//max. number of flashes in a squence, should not exceed 0x7F ...
 #define LEDFlashMaxSeqSteps LEDFlashMaxSeq << 1

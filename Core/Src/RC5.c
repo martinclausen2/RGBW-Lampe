@@ -10,6 +10,8 @@ volatile unsigned char rCounter;  	//Bitte erhalten!
 
 volatile bool RTbit;				//Togglebit von RC5
 
+unsigned char SenderMode;			//Mode for sending commands to other devices
+
 void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 {
 	static unsigned char rc5state;

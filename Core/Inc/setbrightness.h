@@ -12,6 +12,7 @@
 #include "status_LED.h"
 #include <stdbool.h>
 #include "stm32l1xx_hal.h"
+#include "extbrightness.h"
 
 #define maxBrightness		0x00FF  //avoid overflow with signed numbers, should be filled with 1 from MSB to LSB
 #define maxPWM	   			0xFFFF	// =  maxBrigntess^2 = 2^16-1
@@ -19,6 +20,9 @@
 #define startupfocus		0		//focus channel
 #define fadetime			150
 #define MaxFocusChannel     3
+
+#define WriteTime			0xFF	/* time until new brightness value is saved to the eeprom */
+extern unsigned char WriteTimer;	/* time until Brightness is saved in calls to StoreBrightness() */
 
 extern bool LightOn;
 
@@ -36,5 +40,7 @@ void SwAllLightOff();
 void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps);
 void ToggleFocus();
 int PreviewToggelFocus();
+void SetExtBrightness_last();
+void StoreBrightness();
 
 #endif /* SETBRIGHTNESS_H_ */

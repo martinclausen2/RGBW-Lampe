@@ -41,6 +41,8 @@
 #define RemoteSteps			2	//Step size for brightness control via remote control
 #define Brightness_steps	20	//number of steps used to execute a brightness change
 
+extern unsigned char SenderMode;		//Mode for sending commands to other devices
+
 //State Machine zur Decodierung des RC5-Fernbedieungscodes
 static const unsigned char tblRemote[] =	{
 		1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0,
