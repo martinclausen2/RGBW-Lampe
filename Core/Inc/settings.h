@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include "stm32l1xx_hal.h"
-#include "stm32l1xx_hal_flash_ex.h"
+#include <assert.h>
 
 typedef struct {
 	unsigned char weekday;
@@ -25,6 +25,8 @@ typedef struct {
 } alarm_t;
 
 typedef struct {
+  uint32_t version;
+  uint32_t revision;
   unsigned char RC5Addr;				//IR remote control address
   unsigned char ReceiverMode;			//Mode for acting on commands from other devices
   unsigned char SenderMode;				//Mode for sending commands to other devices

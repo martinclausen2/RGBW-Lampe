@@ -123,6 +123,7 @@ void Error_Handler(void);
 #define ENC_B_GPIO_Port GPIOB
 #define ENC_A_Pin GPIO_PIN_7
 #define ENC_A_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 /* USER CODE END Private defines */
 
