@@ -136,6 +136,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //load RAM values from EEPROM
   Settings_Init(&hcrc);
+  SenderMode = GLOBAL_settings_ptr->SenderMode;
 
   PWM_Init(&htim2);
   Init_SerialLogger(&huart1);
