@@ -68,7 +68,6 @@ void MainMenu()
 						}
 					else
 						{
-//						MeasureExtBrightness();
 						if (!KeyState)	//protect preview from being overwritten
 							{
 							LEDStandby();	//dim standby led according to external brightness

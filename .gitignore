@@ -5,5 +5,4 @@ Debug/*
 # build artefacts
 *.bin
 *.elf
-*.ld
 *.o
