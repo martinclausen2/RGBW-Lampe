@@ -36,6 +36,7 @@ extern "C" {
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include "terminal_helper.h"
 #include "serialLogger.h"
 #include "mainmenu.h"
 #include "eeprom.h"
