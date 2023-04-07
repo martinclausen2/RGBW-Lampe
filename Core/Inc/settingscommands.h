@@ -1,6 +1,8 @@
 #ifndef _COMMANDS_H_
 #define _COMMANDS_H_
 
-void Cmds_Init();
+#include "terminal_helper.h"
+
+void SettingsCommands_Init();
 
 #endif // _COMMANDS_H_

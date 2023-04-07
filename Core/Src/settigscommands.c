@@ -1,12 +1,9 @@
-#include "commands.h"
-
-#include "terminal_config.h"
-#include "../../terminal/terminal.h"
+#include <settingscommands.h>
 
 static uint8_t _t1_cmd();
 static uint8_t _t2_cmd();
 
-void Cmds_Init()
+void SettingsCommands_Init()
 {
 	CLI_AddCmd("t1", _t1_cmd, 1, TMC_PrintStartTime | TMC_PrintStopTime, "t1 - description command");
 	CLI_AddCmd("t2", _t2_cmd, 0, TMC_PrintDiffTime, "t2 - description command");
