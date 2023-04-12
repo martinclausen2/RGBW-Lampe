@@ -214,7 +214,7 @@ void SwAllLightOff()
 	if (LightOn == true)						//remote signal might try to switch a switched on light on again
 		{
 		LightOn=false;
-		Alarmflag=0;
+		alarmState.alarmFlag=0;
 		SwLightOff(0);
 		SwLightOff(1);
 		SwLightOff(2);
@@ -265,7 +265,7 @@ void StoreBrightness()
 			memcpy(Brightness_start, GLOBAL_settings_ptr->Brightness_start, sizeof(Brightness_start));
 			SetExtBrightness_last();
 			GLOBAL_settings_ptr->ExtBrightness_last=ExtBrightness_last;
-			Settings_Write();
+			SettingsWrite();
 			}
 		WriteTimer=0;
 		}

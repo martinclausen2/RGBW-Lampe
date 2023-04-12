@@ -1,6 +1,8 @@
 /*
  * terminal_helper.h
  *
+ * USE_HAL_UART_REGISTER_CALLBACKS must be set to on = 1U
+ *
  *  Created on: 30.12.2022
  *      Author: Martin
  */
@@ -10,7 +12,6 @@
 
 #include "../../terminal/terminal.h"
 #include "terminal_config.h"
-#include "commands.h"
 
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 

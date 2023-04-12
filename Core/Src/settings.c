@@ -1,40 +1,33 @@
-/*
- * settings.c
- *
- *  Created on: 15.04.2022
- *      Author: Martin
- *      Taken from https://m0agx.eu/2018/04/15/using-the-internal-eeprom-of-stm32l/
- */
-
-
 #include "settings.h"
+#include <stm32l1xx.h>
+#include <string.h>
 
 #define DATA_EEPROM_START_ADDR     0x08080000
-#define DATA_EEPROM_SIZE_BYTES     4096 // 8192 only with STM32L15xxC
+#define DATA_EEPROM_SIZE_BYTES     8192
 
-//Static_assert(sizeof(settings_t) < DATA_EEPROM_SIZE_BYTES, "EEPROM struct too large!");
-//Static_assert(sizeof(settings_t) % 4 == 0, "EEPROM struct has to be multiple of 4 bytes");
+//_Static_assert(true, "test");
+//_Static_assert(sizeof(settings_t) < DATA_EEPROM_SIZE_BYTES, "EEPROM struct too large!");
+//_Static_assert(sizeof(settings_t) % 4 == 0, "EEPROM struct has to be multiple of 4 bytes");
 
-CRC_HandleTypeDef *hcrc_settings;				//handle to address crc
+CRC_HandleTypeDef *hcrc_settings;						//handle to address CRC
 
 static settings_t _settings_in_ram;
 
 settings_t *GLOBAL_settings_ptr = &_settings_in_ram;
 
-static void SettingsReset2Defaults(void);
-
-void Settings_Init(CRC_HandleTypeDef *handle_crc)
+void SettingsInit(CRC_HandleTypeDef *handle_crc)
 {
 	hcrc_settings = handle_crc;
-	Settings_Read();
+	SettingsRead();
 }
 
-void Settings_Read(void){
+void SettingsRead(void){
     //copy data from EEPROM to RAM
     memcpy(GLOBAL_settings_ptr, (uint32_t*)DATA_EEPROM_START_ADDR, sizeof(settings_t));
 
     __HAL_RCC_CRC_CLK_ENABLE();
 
+    //calculate new CRC
     uint32_t computed_crc = HAL_CRC_Calculate(
     		hcrc_settings,
             (uint32_t *)GLOBAL_settings_ptr,
@@ -44,24 +37,25 @@ void Settings_Read(void){
     __HAL_RCC_CRC_CLK_DISABLE();
 
     if (computed_crc != GLOBAL_settings_ptr->crc32){
-        SettingsReset2Defaults();
+    	SettingsReset2Defaults();
     }
 }
 
-uint32_t Settings_Write(void){
+uint32_t SettingsWrite(void){
     GLOBAL_settings_ptr->revision++;
 
     __HAL_RCC_CRC_CLK_ENABLE();
 
-    GLOBAL_settings_ptr->crc32 = HAL_CRC_Calculate( //calculate new CRC
+    //calculate new CRC
+    GLOBAL_settings_ptr->crc32 = HAL_CRC_Calculate(
     		hcrc_settings,
-			(uint32_t *)GLOBAL_settings_ptr,
+            (uint32_t *)GLOBAL_settings_ptr,
             (sizeof(settings_t)-sizeof(uint32_t))/sizeof(uint32_t)/*size minus the crc32 at the end, IN WORDS*/
     );
 
     __HAL_RCC_CRC_CLK_DISABLE();
 
-    HAL_FLASHEx_DATAEEPROM_Unlock();  //Unprotect the EEPROM to allow writing
+    HAL_FLASHEx_DATAEEPROM_Unlock();
 
     uint32_t *src = (uint32_t*)GLOBAL_settings_ptr;
     uint32_t *dst = (uint32_t*)DATA_EEPROM_START_ADDR;
@@ -69,8 +63,8 @@ uint32_t Settings_Write(void){
     //write settings word (uint32_t) at a time
     for (uint32_t i = 0; i < sizeof(settings_t)/sizeof(uint32_t); i++){
         if (*dst != *src){ //write only if value has been modified
-        	HAL_StatusTypeDef status = HAL_FLASHEx_DATAEEPROM_Program(TYPEPROGRAMDATA_WORD, (uint32_t)dst, *src);
-            if (status != HAL_OK){
+        	HAL_StatusTypeDef s = HAL_FLASHEx_DATAEEPROM_Program(TYPEPROGRAMDATA_WORD, (uint32_t)dst, *src);
+            if (s != HAL_OK){
                 return FLASH->SR;
             }
         }
@@ -78,13 +72,13 @@ uint32_t Settings_Write(void){
         dst++;
     }
 
-    HAL_FLASHEx_DATAEEPROM_Lock();  // Reprotect the EEPROM
+    HAL_FLASHEx_DATAEEPROM_Lock();
 
-    Settings_Read();
+    SettingsRead();
     return 0;
 }
 
-static void SettingsReset2Defaults(void){
+void SettingsReset2Defaults(void){
     memset(GLOBAL_settings_ptr, 0, sizeof(settings_t));
 
     GLOBAL_settings_ptr->revision = 0;
@@ -102,6 +96,10 @@ static void SettingsReset2Defaults(void){
     GLOBAL_settings_ptr->minBrightness[1] = 7;			//minimum brightness after power on and recalculation using measured brightness
     GLOBAL_settings_ptr->minBrightness[2] = 7;			//minimum brightness after power on and recalculation using measured brightness
     GLOBAL_settings_ptr->minBrightness[3] = 7;			//minimum brightness after power on and recalculation using measured brightness
+    GLOBAL_settings_ptr->maxBrightness[0] = 100;		//maximum brightness
+    GLOBAL_settings_ptr->maxBrightness[1] = 100;		//maximum brightness
+    GLOBAL_settings_ptr->maxBrightness[2] = 100;		//maximum brightness
+    GLOBAL_settings_ptr->maxBrightness[3] = 100;		//maximum brightness
     GLOBAL_settings_ptr->AlarmBrightness[0] = 0x80;		//maximum brightness targeted during alarm
 	GLOBAL_settings_ptr->AlarmBrightness[1] = 0x80;		//maximum brightness targeted during alarm
 	GLOBAL_settings_ptr->AlarmBrightness[2] = 0x80;		//maximum brightness targeted during alarm
@@ -115,14 +113,14 @@ static void SettingsReset2Defaults(void){
     GLOBAL_settings_ptr->AlarmTimeSnooze = 6;			//Snooze Time
     GLOBAL_settings_ptr->BeepVolume = 0x40;				//Volume of the key beep
 
-    alarm_t alarms[7] = {
-    		{ 0, 6, 20 },
+    alarm_t alarms[maxAlarm] = {
     		{ 1, 6, 20 },
     		{ 2, 6, 20 },
     		{ 3, 6, 20 },
     		{ 4, 6, 20 },
-    		{ 5, 7, 20 },
-    		{ 6, 7, 20 }
+    		{ 5, 6, 20 },
+    		{ 6, 7, 20 },
+    		{ 7, 7, 20 }
     };
 
     memcpy(GLOBAL_settings_ptr->Alarm, alarms, sizeof alarms);
