@@ -78,7 +78,7 @@ void SetBrightnessLevelRemote()
 {
 	if (rCommand<=9)
 		{
-		Brightness[FocusChannel]=(((unsigned int)(rCommand)*(unsigned int)maxBrightness)/(9)) & maxBrightness;
+		Brightness[FocusChannel]=(((unsigned int)(rCommand)*(unsigned int)GLOBAL_settings_ptr->maxBrightness[FocusChannel])/(9)) & 0xFF;
 		SetLightRemote(FocusChannel,0);
 		}
 }

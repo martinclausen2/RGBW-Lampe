@@ -1,7 +1,5 @@
 #include <settingscommands.h>
 
-//TODO command for setting & reading current brightness, reading ext brightness
-
 void SettingsCommands_Init()
 {
 	CLI_AddCmd("bright", BrightnessCmd, 1, TMC_None, "set brightness values - [type] <-c channel_no> <-b brightness_value>");
@@ -14,6 +12,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("alarmsetting", AlarmSettingsCmd, 0, TMC_None, "set alarm parameters - <-f time to fade-in light> <-si time to signal> <-sn snooze time>");
 	CLI_AddCmd("alarm", AlarmCmd, 0, TMC_None, "trigger, reset, set alarm skip count - <-a 1 | 0> <-s alarm skip count>");
 	CLI_AddCmd("beep", 	SetBeepVolumeCmd, 0, TMC_None, "set beep volume - <-v volume>");
+	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light and ext power - <-l 1 | 0> <-ep 1 | 0>");
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
 }
 
@@ -111,8 +110,18 @@ uint8_t BrightnessCmd()
 			if (cflag & bflag)
 			{
 				GLOBAL_settings_ptr->PWM_Offset[channel_no]=brightness_value;
+				PWM_SetupDim(channel_no, fadetime, 0);
 			}
 			printIntValueArray(&(GLOBAL_settings_ptr->PWM_Offset));
+			break;
+		case 5:
+			CLI_Printf("\r\nCurrent brightness:");
+			if (cflag & bflag)
+			{
+				Brightness[channel_no]=brightness_value;
+				PWM_SetupDim(channel_no, fadetime, 0);
+			}
+			printValueArray(&Brightness);
 			break;
 		default:
 			return TE_ArgErr;
@@ -126,14 +135,18 @@ uint8_t BrightnessCmd()
 
 uint8_t GetExtBrightCmd()
 {
-	uint32_t duration = 0;
+	uint32_t duration = 2;
 
 	// optional arguments
 	// without parameters print last external brightness and current external brightness
 	// with parameter -c print external brightness for duration in seconds
 	CLI_GetArgHexByFlag("-d", &duration);
 
-	//TODO get data
+	for(int i=0; i<=(duration*2); i++)
+	{
+		CLI_Printf("\r\nExternal brightness: %10d", (int) extBrightness);
+		HAL_Delay(500);
+	}
 
 	return TE_OK;
 }
@@ -347,6 +360,26 @@ uint8_t SetBeepVolumeCmd()
 
 	SettingsWrite();
 
+	return TE_OK;
+}
+
+uint8_t PowerCmd()
+{
+	uint32_t light = 0;
+
+	if (CLI_GetArgDecByFlag("-l", &light))
+	{
+		if (light == 0)
+		{
+			SwAllLightOff();
+			CLI_Printf("\r\nLight off.");
+		}
+		else
+		{
+			SwAllLightOn();
+			CLI_Printf("\r\nLight on.");
+		}
+	}
 	return TE_OK;
 }
 

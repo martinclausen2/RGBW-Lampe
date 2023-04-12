@@ -26,8 +26,10 @@ const unsigned int photoampfactor[] = {1, 30, 1000};
 
 void Init_ExtBrightness(ADC_HandleTypeDef *handle_adc)
 {
-	//
 	hadc_extbrightness = handle_adc;
+
+	pADC_CallbackTypeDef pCallback = AddValue_ExtBrightness;
+	HAL_ADC_RegisterCallback(hadc_extbrightness, HAL_ADC_CONVERSION_COMPLETE_CB_ID, pCallback);
 }
 
 void Sample_ExtBrightness()
@@ -82,7 +84,3 @@ void AddValue_ExtBrightness(ADC_HandleTypeDef *handle_adc)
 	}
 }
 
-unsigned long Get_ExtBrightness()
-{
-	return extBrightness;
-}

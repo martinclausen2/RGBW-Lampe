@@ -93,9 +93,9 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps)
 	signed int temp;
 	limit=0;						//reset limit indicator
 	temp = Brightness[i] + Steps;
-	if (maxBrightness < temp)		//avoid overflow
+	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)		//avoid overflow
 		{
-		temp = maxBrightness;
+		temp = GLOBAL_settings_ptr->maxBrightness[i];
 		limit = maxLimit;
 		}
 	else if (0 > temp)
@@ -164,9 +164,9 @@ void SwLightOn(unsigned char i, unsigned int relBrightness)
 	minBrightness = GLOBAL_settings_ptr->minBrightness[i];
 	temp=Brightness_start[i];
 	temp=(temp*relBrightness)>>4;
-	if (maxBrightness < temp)						//limit brightness to maximum
+	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)						//limit brightness to maximum
 		{
-		Brightness[i] = maxBrightness;
+		Brightness[i] = GLOBAL_settings_ptr->maxBrightness[i];
 		}
 	else if ((Brightness_start[i]>temp) && (minBrightness>temp))		//limit brightness ..
 		{
@@ -200,7 +200,7 @@ void SwAllLightOn()
 		{
 		FocusChannel=startupfocus;
 		LightOn=true;
-		relBrightness=sqrt32(Get_ExtBrightness()/GLOBAL_settings_ptr->ExtBrightness_last);
+		relBrightness=sqrt32(extBrightness/GLOBAL_settings_ptr->ExtBrightness_last);
 		SwLightOn(0, relBrightness);
 		SwLightOn(1, relBrightness);
 		SwLightOn(2, relBrightness);
@@ -244,7 +244,7 @@ int PreviewToggelFocus()
 
 void SetExtBrightness_last()
 {
-	unsigned int ExtBrightness_last=(Get_ExtBrightness()>>8) & 0xFFFF;
+	unsigned int ExtBrightness_last=(extBrightness>>8) & 0xFFFF;
 	if (0==ExtBrightness_last)
 		{
 		ExtBrightness_last=1;

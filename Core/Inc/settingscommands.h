@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include "settings.h"
 #include "rtc.h"
+#include "extbrightness.h"
+#include "setbrightness.h"
 
 void SettingsCommands_Init();
 
@@ -18,6 +20,8 @@ uint8_t AlarmSettingsCmd();
 uint8_t AlarmScheduleCmd();
 uint8_t AlarmCmd();
 uint8_t SetBeepVolumeCmd();
+uint8_t AlarmCmd();
+uint8_t PowerCmd();
 uint8_t ResetSettingsCmd();
 
 #endif // _SETTINGSCOMMANDS_H_

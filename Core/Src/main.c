@@ -175,14 +175,6 @@ int main(void)
 		Encoder();
       	MainMenu();
       	Sample_ExtBrightness();
-	}
-	CLI_Execute();
-    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-  }
-		// Toggle the LED
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-		CLI_Execute();
 		if (alarmState.alarmFlag)
 		{
 			alarmState.alarmFlag = false;
@@ -193,14 +185,15 @@ int main(void)
 					timeRtc.Hours, timeRtc.Minutes, timeRtc.Seconds)
 			Rtc_SetAlarm();
 		}
-
-		// Rinse and repeat :)
+	}
+	CLI_Execute();
+    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-
+}
 
 /**
   * @brief System Clock Configuration
@@ -1002,14 +995,6 @@ else if (htim->Instance == htim11.Instance)
 	//set flag
  	TimerFlag = true;
 }
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-    // Read & Update the ADC Result
-	// assumption: ADC only used for brightness measurement,
-	// otherwise insert code for branching according to interrupt source here
-	AddValue_ExtBrightness(hadc);
 }
 
 /* USER CODE END 4 */

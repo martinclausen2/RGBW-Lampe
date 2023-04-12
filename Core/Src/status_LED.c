@@ -106,14 +106,14 @@ void LEDStandby()
 		}
 		else
 		{
-			if (Get_ExtBrightness() > 0xFFFF0)	// must be equal to 0xFFFF << 4
+			if (extBrightness > 0xFFFF0)	// must be equal to 0xFFFF << 4
 				{
 			    htim_StatusPWM->Instance->CCR1 = 0x0FFFF;
 				}
 			else
 				{
 				//dim red LED along with external brightness
-			    htim_StatusPWM->Instance->CCR1 = (Get_ExtBrightness() >> 4 & 0x0FFFF);
+			    htim_StatusPWM->Instance->CCR1 = (extBrightness >> 4 & 0x0FFFF);
 			    }
 		    HAL_TIM_PWM_Start(htim_StatusPWM, TIM_CHANNEL_1); //TODO required?
 		}
