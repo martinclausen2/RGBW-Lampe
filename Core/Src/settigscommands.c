@@ -68,7 +68,7 @@ uint8_t BrightnessCmd()
 	uint32_t type = CLI_GetArgHex(0);
 
 	// optional arguments
-	bool cflag = CLI_GetArgDecByFlag("-c", &channel_no) & (channel_no <= maxChannel);
+	bool cflag = CLI_GetArgDecByFlag("-c", &channel_no) & (channel_no < maxChannel);
 	bool bflag = CLI_GetArgDecByFlag("-b", &brightness_value) & (brightness_value <= maxBrightnessLimit);
 
 	switch (type)
@@ -324,7 +324,7 @@ uint8_t AlarmCmd()
 
 	if (CLI_GetArgDecByFlag("-a", &set) & (set <=1))
 	{
-		alarmState.alarmFlag = (set == 1);
+		alarmState.alarmTrigger = (set == 1);
 	}
 
 	if (noPendingAlarm == alarmState.nextAlarmIndex)

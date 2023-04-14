@@ -14,7 +14,7 @@
 #include "stm32l1xx_hal.h"
 #include <assert.h>
 
-#define maxChannel 4
+#define maxChannel 4				//start counting at 1
 #define maxBrightnessLimit 100
 #define maxBeepVolume 100
 #define maxRC5Addr 31

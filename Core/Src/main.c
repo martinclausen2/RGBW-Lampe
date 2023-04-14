@@ -141,16 +141,14 @@ int main(void)
   SettingsInit(&hcrc);
   SenderMode = GLOBAL_settings_ptr->SenderMode;
 
-  Init_Terminal(&huart1);
   SettingsCommands_Init();
+  Init_Terminal(&huart1);
   Rtc_Init();
   PWM_Init(&htim2);
   Status_LED_Init(&htim3);
   Encoder_Init(&htim4);
   Init_ExtBrightness(&hadc);
   Init_MainMenu();
-
-  Init_Terminal(&huart1);
 
 /*##-1- Start the TIM Base generation in interrupt mode ####################*/
   HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
@@ -175,17 +173,8 @@ int main(void)
 		Encoder();
       	MainMenu();
       	Sample_ExtBrightness();
-		if (alarmState.alarmFlag)
-		{
-			alarmState.alarmFlag = false;
-			CLI_Printf("\r\nAlarm!");
-			Rtc_GetDateTime();
-			CLI_Printf("\r\nTimestamp: %02d-%02d-%02d %s %02d:%02d:%02d",
-					dateRtc.Date, dateRtc.Month, dateRtc.Date, WeekdayNames[dateRtc.WeekDay],
-					timeRtc.Hours, timeRtc.Minutes, timeRtc.Seconds)
-			Rtc_SetAlarm();
-		}
 	}
+	AcousticDDSAlarm();
 	CLI_Execute();
     HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     /* USER CODE END WHILE */

@@ -45,6 +45,7 @@ extern "C" {
 #include "RC5.h"
 #include "extbrightness.h"
 #include "settingscommands.h"
+#include "acousticddsalarm.h"
 
 /* USER CODE END Includes */
 

@@ -15,6 +15,8 @@
 #include "setbrightness.h"
 #include "status_LED.h"
 #include "RC5.h"
+#include "wakeuplight.h"
+#include "acousticddsalarm.h"
 #include <stdbool.h>
 
 #define KeyPressShort	30

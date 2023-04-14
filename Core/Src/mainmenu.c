@@ -61,6 +61,7 @@ void MainMenu()
 					DecodeRemote();
 					break;
 				case 1:
+					CheckAlarm();
 					if (LightOn)
 						{
 						StoreBrightness();	// store brightness if required
@@ -83,6 +84,7 @@ void MainMenu()
 						OldKeyState=0;		//Ack any key anyway
 						if (KeyPressShort > KeyPressDuration)
 							{
+							AlarmSnooze();
 							if (LightOn)
 								{
 								ToggleFocus();
@@ -96,6 +98,7 @@ void MainMenu()
 							}
 						else if (KeyPressLong > KeyPressDuration)
 							{
+							AlarmEnd();
 							if (LightOn)
 								{
 //								SendRC5(RC5Addr_com, RC5Cmd_Off, 1, ComModeAll, RC5Cmd_Repeats);

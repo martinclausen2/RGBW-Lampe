@@ -53,7 +53,7 @@ HAL_StatusTypeDef Rtc_SetAlarm()
 
 void Rtc_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
 {
-	alarmState.alarmFlag = true;
+	alarmState.alarmTrigger = true;
 }
 
 //Checks for the next alarm, returns -1 if no alarm was found

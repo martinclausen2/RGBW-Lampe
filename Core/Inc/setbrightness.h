@@ -17,7 +17,6 @@
 #define Brightness_steps	20		//number of steps used to execute a brightness change
 #define startupfocus		0		//focus channel
 #define fadetime			150
-#define MaxFocusChannel     3
 
 #define WriteTime			0xFF	/* time until new brightness value is saved to the eeprom */
 extern unsigned char WriteTimer;	/* time until Brightness is saved in calls to StoreBrightness() */
@@ -26,7 +25,7 @@ extern bool LightOn;
 
 extern int FocusChannel;
 
-extern unsigned char Brightness[4];// = {0,0,0,0};	//current value
+extern unsigned char Brightness[maxChannel];// = {0,0,0,0};	//current value
 
 void PWM_Init(TIM_HandleTypeDef *htim_PWM);
 void PWM_StepDim();

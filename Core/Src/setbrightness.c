@@ -11,7 +11,7 @@ TIM_HandleTypeDef *htim_PWM;				//handle to address timer
 
 bool LightOn;
 int FocusChannel;
-unsigned char Brightness[4];				//current value
+unsigned char Brightness[maxChannel];				//current value
 
 unsigned char Brightness_start[] = {0x3F,0x3F,0x3F,0x3F};	//value before lights off
 unsigned int PWM_Offset[] = {0,0,0,0};   			//PWM value, where the driver effectively starts to generate an output
@@ -214,11 +214,10 @@ void SwAllLightOff()
 	if (LightOn == true)						//remote signal might try to switch a switched on light on again
 		{
 		LightOn=false;
-		alarmState.alarmFlag=0;
-		SwLightOff(0);
-		SwLightOff(1);
-		SwLightOff(2);
-		SwLightOff(3);
+		for (int i = 0; i < maxChannel;	i++)
+			{
+			SwLightOff(i);
+			}
 		HAL_Delay(750);
 		SetExtBrightness_last();
 		SenderMode=GLOBAL_settings_ptr->SenderMode; 		//reset mode
@@ -229,7 +228,7 @@ void SwAllLightOff()
 void ToggleFocus()
 {
 	FocusChannel++;
-	if (FocusChannel > MaxFocusChannel)
+	if (FocusChannel >= maxChannel)
 		FocusChannel = 0;
 }
 
@@ -237,7 +236,7 @@ int PreviewToggelFocus()
 {
 	int temp = FocusChannel;
 	temp++;
-	if (temp > MaxFocusChannel)
+	if (temp >= maxChannel)
 		temp = 0;
 	return temp;
 }

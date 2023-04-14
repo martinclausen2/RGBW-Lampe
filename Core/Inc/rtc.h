@@ -32,7 +32,7 @@ extern RTC_AlarmTypeDef alarmRtc;
 typedef struct {
 	unsigned int skipAlarmCnt;
 	unsigned int maxskipAlarmCnt;
-	bool alarmFlag;
+	bool alarmTrigger;
 	unsigned int nextAlarmIndex;
 } alarmState_t;
 
