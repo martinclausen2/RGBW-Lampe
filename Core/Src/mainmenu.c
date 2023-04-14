@@ -6,8 +6,6 @@
  */
 
 #include "mainmenu.h"
-#include <ctype.h>
-#include <string.h>
 
 void Init_MainMenu()
 {
@@ -45,12 +43,12 @@ void MainMenu()
 					else
 						{
 						// Switch All On
-//						Beep();
+						Beep();
 						LEDOn();
 						}
 				else if (KeyPressLong == KeyPressDuration)
 					{
-//					Beep();
+					Beep();
 					LEDCancel();
 					}
 				}

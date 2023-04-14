@@ -18,6 +18,8 @@
 #include "wakeuplight.h"
 #include "acousticddsalarm.h"
 #include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
 
 #define KeyPressShort	30
 #define KeyPressLong	80
