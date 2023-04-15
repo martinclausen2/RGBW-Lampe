@@ -13,9 +13,7 @@ bool LightOn;
 int FocusChannel;
 unsigned char Brightness[maxChannel];				//current value
 
-unsigned char Brightness_start[] = {0x3F,0x3F,0x3F,0x3F};	//value before lights off
 unsigned int PWM_Offset[] = {0,0,0,0};   			//PWM value, where the driver effectively starts to generate an output
-unsigned int ExtBrightness_last = 0x01FFF;			//external brightness during lights off divided by 256
 unsigned char WriteTimer;					/* time until Brightness is saved in calls to StoreBrightness() */
 
 signed int PWM_set[] = {0,0,0,0};			//current PWM value
@@ -33,16 +31,11 @@ void PWM_Init(TIM_HandleTypeDef *handle_tim)
 	HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_3);
 	HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_4);
-	Update_PWM_Offset(0);
-	Update_PWM_Offset(1);
-	Update_PWM_Offset(2);
-	Update_PWM_Offset(3);
-}
-
-void Update_PWM_Offset(unsigned char i)
-{
-	PWM_Offset[i]  = GLOBAL_settings_ptr->PWM_Offset[i];
-	PWM_Offset[i] *= PWM_Offset[i];
+	for (int i = 0; i < maxChannel;	i++)
+		{
+		PWM_Offset[i]  = GLOBAL_settings_ptr->PWM_Offset[i];
+		PWM_Offset[i] *= PWM_Offset[i];
+		}
 }
 
 void PWM_SetPulseWidth(int channel)
@@ -160,19 +153,22 @@ void SwLightOn(unsigned char i, unsigned int relBrightness)
 {
 	unsigned long temp;
 	unsigned char minBrightness;					//avoid reduction to very low brightness values by external light
+	unsigned char maxBrightness;
+	unsigned char startBrightness;
 
 	minBrightness = GLOBAL_settings_ptr->minBrightness[i];
-	temp=Brightness_start[i];
-	temp=(temp*relBrightness)>>4;
-	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)						//limit brightness to maximum
+	maxBrightness = GLOBAL_settings_ptr->maxBrightness[i];
+	startBrightness = GLOBAL_settings_ptr->Brightness_start[i];
+	temp=(startBrightness*relBrightness)>>4;
+	if (maxBrightness < temp)						//limit brightness to maximum
 		{
-		Brightness[i] = GLOBAL_settings_ptr->maxBrightness[i];
+		Brightness[i] = maxBrightness;
 		}
-	else if ((Brightness_start[i]>temp) && (minBrightness>temp))		//limit brightness ..
+	else if ((startBrightness>temp) && (minBrightness>temp))		//limit brightness ..
 		{
-		if (minBrightness>Brightness_start[i])
+		if (minBrightness>startBrightness)
 			{
-			Brightness[i] = Brightness_start[i];		// .. to last value if it is smaller than minimum brightness
+			Brightness[i] = startBrightness;		// .. to last value if it is smaller than minimum brightness
 			}
 		else
 			{
@@ -188,7 +184,7 @@ void SwLightOn(unsigned char i, unsigned int relBrightness)
 
 void SwLightOff(unsigned char i)
 {
-	Brightness_start[i]=Brightness[i];
+	GLOBAL_settings_ptr->Brightness_start[i]=Brightness[i];
 	Brightness[i]=0;
 	PWM_SetupDim(i, fadetime, 0);
 }
@@ -201,10 +197,10 @@ void SwAllLightOn()
 		FocusChannel=startupfocus;
 		LightOn=true;
 		relBrightness=sqrt32(extBrightness/GLOBAL_settings_ptr->ExtBrightness_last);
-		SwLightOn(0, relBrightness);
-		SwLightOn(1, relBrightness);
-		SwLightOn(2, relBrightness);
-		SwLightOn(3, relBrightness);
+		for (int i = 0; i < maxChannel;	i++)
+			{
+			SwLightOn(i, relBrightness);
+			}
 		LEDOn();
 		}
 }
@@ -261,9 +257,8 @@ void StoreBrightness()
 		{
 		if (LightOn)
 			{
-			memcpy(Brightness_start, GLOBAL_settings_ptr->Brightness_start, sizeof(Brightness_start));
+			memcpy(Brightness, GLOBAL_settings_ptr->Brightness_start, sizeof(Brightness));
 			SetExtBrightness_last();
-			GLOBAL_settings_ptr->ExtBrightness_last=ExtBrightness_last;
 			SettingsWrite();
 			}
 		WriteTimer=0;

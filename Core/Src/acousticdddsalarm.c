@@ -7,7 +7,11 @@
 
 #include "acousticddsalarm.h"
 
+#define dacCacheSize 0x0FFF
+
 bool AcousticAlarmFlag = false;
+
+uint16_t DACcache[dacCacheSize];
 
 void Beep()
 {
@@ -23,6 +27,7 @@ void StartAcousticDDSAlarm()
 void AcousticDDSAlarm()
 {
 	//reload ram for signal generation
+	//
 }
 
 void StopAcousticDDSAlarm()

@@ -25,11 +25,10 @@ extern bool LightOn;
 
 extern int FocusChannel;
 
-extern unsigned char Brightness[maxChannel];// = {0,0,0,0};	//current value
+extern unsigned char Brightness[maxChannel];	//current value
 
 void PWM_Init(TIM_HandleTypeDef *htim_PWM);
 void PWM_StepDim();
-void Update_PWM_Offset(unsigned char i);
 void SwLightOn(unsigned char i, unsigned int relBrightness);
 void SwAllLightOn();
 void SwLightOff(unsigned char i);
