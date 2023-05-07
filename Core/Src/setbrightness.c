@@ -196,7 +196,12 @@ void SwAllLightOn()
 		{
 		FocusChannel=startupfocus;
 		LightOn=true;
-		relBrightness=sqrt32(extBrightness/GLOBAL_settings_ptr->ExtBrightness_last);
+		unsigned int ExtBrightness_last = GLOBAL_settings_ptr->ExtBrightness_last;
+		if (0==ExtBrightness_last)
+			{
+			ExtBrightness_last=1;
+			}
+		relBrightness=sqrt32(extBrightness/ExtBrightness_last);
 		for (int i = 0; i < maxChannel;	i++)
 			{
 			SwLightOn(i, relBrightness);
@@ -240,10 +245,6 @@ int PreviewToggelFocus()
 void SetExtBrightness_last()
 {
 	unsigned int ExtBrightness_last=(extBrightness>>8) & 0xFFFF;
-	if (0==ExtBrightness_last)
-		{
-		ExtBrightness_last=1;
-		}
 	GLOBAL_settings_ptr->ExtBrightness_last=ExtBrightness_last;
 }
 
