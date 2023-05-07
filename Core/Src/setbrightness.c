@@ -258,7 +258,7 @@ void StoreBrightness()
 		{
 		if (LightOn)
 			{
-			memcpy(Brightness, GLOBAL_settings_ptr->Brightness_start, sizeof(Brightness));
+			memcpy(GLOBAL_settings_ptr->Brightness_start, Brightness, sizeof(Brightness));
 			SetExtBrightness_last();
 			SettingsWrite();
 			}

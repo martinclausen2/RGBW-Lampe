@@ -13,7 +13,9 @@
 #include "stm32l1xx_hal.h"
 #include "main.h"
 
-#define extbrightness_ADC_RANK 1
+#define extbrightness_ADC_RANK 0
+
+#define maxADCvalue 0xFFF
 
 #define minphotoamp		 100
 #define maxphotoamp		3000

@@ -3,7 +3,7 @@
 void SettingsCommands_Init()
 {
 	CLI_AddCmd("bright", BrightnessCmd, 1, TMC_None, "set brightness values - [type] <-c channel_no> <-b brightness_value>");
-	CLI_AddCmd("getextbright", GetExtBrightCmd, 0, TMC_PrintStartTime | TMC_PrintStopTime, "getextbright <-d duration>");
+	CLI_AddCmd("getextbright", GetExtBrightCmd, 0, TMC_PrintStartTime | TMC_PrintStopTime, "getextbright");
 	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-a address> <-r receiver mode> <-s sender mode>");
 	CLI_AddCmd("time", SetTimeCmd, 3, TMC_None, "set time of RTC - [hour] [minute] [second]");
 	CLI_AddCmd("date", SetDateCmd, 4, TMC_None, "set date of RTC - [2 digit year] [month] [day] [w] with w weekday");
@@ -12,7 +12,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("alarmsetting", AlarmSettingsCmd, 0, TMC_None, "set alarm parameters - <-f time to fade-in light> <-si time to signal> <-sn snooze time>");
 	CLI_AddCmd("alarm", AlarmCmd, 0, TMC_None, "trigger, reset, set alarm skip count - <-a 1 | 0> <-s alarm skip count>");
 	CLI_AddCmd("beep", 	SetBeepVolumeCmd, 0, TMC_None, "set beep volume - <-v volume>");
-	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light and ext power - <-l 1 | 0> <-ep 1 | 0>");
+	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light - <-l 1 | 0>");
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
 }
 
@@ -90,7 +90,7 @@ uint8_t BrightnessCmd()
 			printValueArray(&(GLOBAL_settings_ptr->minBrightness));
 			break;
 		case 2:
-			CLI_Printf("\r\nMaximum brightness when switched on:");
+			CLI_Printf("\r\nMaximum brightness any time:");
 			if (cflag & bflag)
 			{
 				GLOBAL_settings_ptr->maxBrightness[channel_no]=brightness_value;
@@ -135,19 +135,7 @@ uint8_t BrightnessCmd()
 
 uint8_t GetExtBrightCmd()
 {
-	uint32_t duration = 2;
-
-	// optional arguments
-	// without parameters print last external brightness and current external brightness
-	// with parameter -c print external brightness for duration in seconds
-	CLI_GetArgHexByFlag("-d", &duration);
-
-	for(int i=0; i<=(duration*2); i++)
-	{
-		CLI_Printf("\r\nExternal brightness: %10d", (int) extBrightness);
-		HAL_Delay(500);
-	}
-
+	CLI_Printf("\r\nExternal brightness: %10d", (int) (extBrightness >> 6));
 	return TE_OK;
 }
 
@@ -232,7 +220,7 @@ uint8_t GetTimestampCmd()
 {
 	Rtc_GetDateTime();
 	CLI_Printf("\r\nTimestamp: %02d-%02d-%02d %s %02d:%02d:%02d",
-			dateRtc.Date, dateRtc.Month, dateRtc.Date, WeekdayNames[dateRtc.WeekDay],
+			dateRtc.Year, dateRtc.Month, dateRtc.Date, WeekdayNames[dateRtc.WeekDay],
 			timeRtc.Hours, timeRtc.Minutes, timeRtc.Seconds)
 	return TE_OK;
 }
@@ -366,6 +354,7 @@ uint8_t SetBeepVolumeCmd()
 uint8_t PowerCmd()
 {
 	uint32_t light = 0;
+	uint32_t extPower = 0;
 
 	if (CLI_GetArgDecByFlag("-l", &light))
 	{
@@ -380,6 +369,7 @@ uint8_t PowerCmd()
 			CLI_Printf("\r\nLight on.");
 		}
 	}
+
 	return TE_OK;
 }
 

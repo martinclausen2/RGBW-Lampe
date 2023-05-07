@@ -15,8 +15,8 @@
 #include <assert.h>
 
 #define maxChannel 4				//start counting at 1
-#define maxBrightnessLimit 100
-#define maxBeepVolume 100
+#define maxBrightnessLimit 0xFF
+#define maxBeepVolume 0xFF
 #define maxRC5Addr 31
 #define maxComMode 3
 #define maxLightFading 30

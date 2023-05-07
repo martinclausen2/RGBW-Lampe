@@ -145,8 +145,8 @@ int main(void)
   SettingsInit(&hcrc);
   SenderMode = GLOBAL_settings_ptr->SenderMode;
 
-  SettingsCommands_Init();
   Init_Terminal(&huart1);
+  SettingsCommands_Init();
   Rtc_Init();
   PWM_Init(&htim2);
   Status_LED_Init(&htim3);
@@ -162,8 +162,6 @@ int main(void)
 
   //Start ESP32 reset pin is inverted
   HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
-
-  log_serial_P("Bereit\r\n");
 
   SwAllLightOn();
   /* USER CODE END 2 */
