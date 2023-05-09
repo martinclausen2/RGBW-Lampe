@@ -11,9 +11,9 @@ TIM_HandleTypeDef *htim_PWM;				//handle to address timer
 
 bool LightOn;
 int FocusChannel;
-unsigned char Brightness[maxChannel];				//current value
+unsigned char Brightness[maxChannel];		//current value
 
-unsigned int PWM_Offset[] = {0,0,0,0};   			//PWM value, where the driver effectively starts to generate an output
+unsigned int PWM_Offset[] = {0,0,0,0};   	//PWM value, where the driver effectively starts to generate an output
 unsigned char WriteTimer;					/* time until Brightness is saved in calls to StoreBrightness() */
 
 signed int PWM_set[] = {0,0,0,0};			//current PWM value
@@ -38,8 +38,10 @@ void PWM_Init(TIM_HandleTypeDef *handle_tim)
 		}
 }
 
-void PWM_SetPulseWidth(int channel)
+unsigned int PWM_SetPulseWidth(int channel)
 {
+	unsigned int temp;
+
 	PWM_set[channel] += PWM_incr[channel];
 	--PWM_incr_cnt[channel];
 	//limit to 16 bit
@@ -47,6 +49,12 @@ void PWM_SetPulseWidth(int channel)
 	{
 		PWM_set[channel] = maxPWM;
 	}
+	temp = PWM_set[channel] + PWM_Offset[channel];
+	if (temp > maxPWM)
+	{
+		temp = maxPWM;
+	}
+	return temp;
 }
 
 void PWM_StepDim()		// perform next dimming step, must frequently called for dimming action
@@ -54,29 +62,25 @@ void PWM_StepDim()		// perform next dimming step, must frequently called for dim
 {
 	if (PWM_incr_cnt[0])
 		{
-		PWM_SetPulseWidth(0);
-	    htim_PWM->Instance->CCR3 = PWM_set[0];
+	    htim_PWM->Instance->CCR3 = PWM_SetPulseWidth(0);
 	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_3); //TODO required?
 		}
 
 	if (PWM_incr_cnt[1])
 		{
-		PWM_SetPulseWidth(1);
-	    htim_PWM->Instance->CCR1 = PWM_set[1];
+	    htim_PWM->Instance->CCR1 = PWM_SetPulseWidth(1);
 	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_1); //TODO required?
 		}
 
 	if (PWM_incr_cnt[2])
 		{
-		PWM_SetPulseWidth(2);
-	    htim_PWM->Instance->CCR4 = PWM_set[2];
+	    htim_PWM->Instance->CCR4 = PWM_SetPulseWidth(2);
 	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_4); //TODO required?
 		}
 
 	if (PWM_incr_cnt[3])
 		{
-		PWM_SetPulseWidth(3);
-	    htim_PWM->Instance->CCR2 = PWM_set[3];
+	    htim_PWM->Instance->CCR2 = PWM_SetPulseWidth(3);
 	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_2); //TODO required?
 		}
 }
@@ -107,7 +111,7 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps)
 		}
 	else
 		{
-		if (0<temp)		// if we would have a stepsize smaller then one, we better reduce the number of steps
+		if (0<temp)		// if we would have a step size smaller then one, we better reduce the number of steps
 			{
 			PWM_incr[i] = 1;
 			PWM_incr_cnt[i] = temp;
@@ -177,7 +181,7 @@ void SwLightOn(unsigned char i, unsigned int relBrightness)
 		}
 	else
 		{
-		Brightness[i] = temp;					// or just take the calculated value!
+		Brightness[i] = temp;						// or just take the calculated value!
 		}
 	PWM_SetupDim(i, fadetime, 0);
 }
