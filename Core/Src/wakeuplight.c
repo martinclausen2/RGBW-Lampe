@@ -53,7 +53,7 @@ void CheckAlarm()
 			}
 		}
 
-	//count down to start acoustig signal
+	//count down to start acoustic signal
 	if (1 < Minutes2Signal)
 		{
 		--Minutes2Signal;
@@ -71,6 +71,7 @@ void AlarmEnd()
 	AlarmFlag=0;
 	Minutes2Signal=0;
 	StopAcousticDDSAlarm();
+	LEDOn();
 }
 
 void AlarmSnooze()

@@ -102,8 +102,8 @@ void SettingsReset2Defaults(void){
     GLOBAL_settings_ptr->maxBrightness[3] = 255;		//maximum brightness
     GLOBAL_settings_ptr->AlarmBrightness[0] = 128;		//maximum brightness targeted during alarm
 	GLOBAL_settings_ptr->AlarmBrightness[1] = 255;		//maximum brightness targeted during alarm
-	GLOBAL_settings_ptr->AlarmBrightness[2] =   0;		//maximum brightness targeted during alarm
-    GLOBAL_settings_ptr->AlarmBrightness[3] = 128;		//maximum brightness targeted during alarm
+	GLOBAL_settings_ptr->AlarmBrightness[2] =  52;		//maximum brightness targeted during alarm
+    GLOBAL_settings_ptr->AlarmBrightness[3] = 180;		//maximum brightness targeted during alarm
     GLOBAL_settings_ptr->PWM_Offset[0] = 0;				//PWM value, where the driver effectively starts to generate an output
     GLOBAL_settings_ptr->PWM_Offset[1] = 0;				//PWM value, where the driver effectively starts to generate an output
     GLOBAL_settings_ptr->PWM_Offset[2] = 0;				//PWM value, where the driver effectively starts to generate an output

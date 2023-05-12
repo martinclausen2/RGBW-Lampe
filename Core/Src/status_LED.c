@@ -115,7 +115,6 @@ void LEDStandby()
 				//dim red LED along with external brightness
 			    htim_StatusPWM->Instance->CCR1 = (extBrightness >> 4 & 0x0FFFF);
 			    }
-		    HAL_TIM_PWM_Start(htim_StatusPWM, TIM_CHANNEL_1); //TODO required?
 		}
 }
 
@@ -163,18 +162,15 @@ void LEDSetColorTemp(unsigned char i)
 	tempPWM *= tempPWM;
 
     htim_StatusPWM->Instance->CCR2 = tempPWM;
-    HAL_TIM_PWM_Start(htim_StatusPWM, TIM_CHANNEL_2); //TODO required?
 
 	tempPWM = colorTable[i][1];	//green
 	tempPWM *= tempPWM;
 
     htim_StatusPWM->Instance->CCR3 = tempPWM;
-    HAL_TIM_PWM_Start(htim_StatusPWM, TIM_CHANNEL_3); //TODO required?
 
 	tempPWM = colorTable[i][2];	//red
 	tempPWM *= tempPWM;
 
     htim_StatusPWM->Instance->CCR1 = tempPWM;
-    HAL_TIM_PWM_Start(htim_StatusPWM, TIM_CHANNEL_1); //TODO required?
 }
 

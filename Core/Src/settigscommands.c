@@ -283,12 +283,17 @@ uint8_t AlarmScheduleCmd()
 			GLOBAL_settings_ptr->Alarm[i].minute = minute;
 		}
 
-		CLI_Printf("\r\nAlarm no %d\r\nweekday: %d %s\r\ntime: %02d:%02d",
+		CLI_Printf("\r\nno\tweekday\t\ttime");
+
+		for (i = 0; i < maxAlarm;	i++)
+		{
+			CLI_Printf("\r\n%d\t%d %s\t%02d:%02d",
 				(int)i,
 				(int)GLOBAL_settings_ptr->Alarm[i].weekday,
 				WeekdayNames[GLOBAL_settings_ptr->Alarm[i].weekday],
 				(int)GLOBAL_settings_ptr->Alarm[i].hour,
 				(int)GLOBAL_settings_ptr->Alarm[i].minute);
+		}
 
 		SettingsWrite();
 		Rtc_SetAlarm();
@@ -344,6 +349,8 @@ uint8_t SetBeepVolumeCmd()
 		GLOBAL_settings_ptr->BeepVolume = (uint8_t)volume;
 	}
 
+	Beep();
+
 	CLI_Printf("\r\nBeep volume: %d", (int)GLOBAL_settings_ptr->BeepVolume);
 
 	SettingsWrite();
@@ -360,15 +367,21 @@ uint8_t PowerCmd()
 		if (light == 0)
 		{
 			SwAllLightOff();
-			CLI_Printf("\r\nLight off.");
 		}
 		else
 		{
 			SwAllLightOn();
-			CLI_Printf("\r\nLight on.");
 		}
 	}
 
+	if (LightOn)
+	{
+		CLI_Printf("\r\nLight on.");
+	}
+	else
+	{
+		CLI_Printf("\r\nLight off.");
+	}
 	return TE_OK;
 }
 

@@ -7,6 +7,7 @@
 #include "rtc.h"
 #include "extbrightness.h"
 #include "setbrightness.h"
+#include "acousticddsalarm.h"
 
 void SettingsCommands_Init();
 

@@ -63,25 +63,21 @@ void PWM_StepDim()		// perform next dimming step, must frequently called for dim
 	if (PWM_incr_cnt[0])
 		{
 	    htim_PWM->Instance->CCR3 = PWM_SetPulseWidth(0);
-	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_3); //TODO required?
 		}
 
 	if (PWM_incr_cnt[1])
 		{
 	    htim_PWM->Instance->CCR1 = PWM_SetPulseWidth(1);
-	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_1); //TODO required?
 		}
 
 	if (PWM_incr_cnt[2])
 		{
 	    htim_PWM->Instance->CCR4 = PWM_SetPulseWidth(2);
-	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_4); //TODO required?
 		}
 
 	if (PWM_incr_cnt[3])
 		{
 	    htim_PWM->Instance->CCR2 = PWM_SetPulseWidth(3);
-	    HAL_TIM_PWM_Start(htim_PWM, TIM_CHANNEL_2); //TODO required?
 		}
 }
 
