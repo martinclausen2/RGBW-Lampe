@@ -29,6 +29,8 @@
 
 void Init_Terminal(UART_HandleTypeDef *handle_huart);
 
+void Execute_Terminal();
+
 void _reset_fcn();
 
 void TUSART_PutChar(char c);
@@ -36,6 +38,8 @@ void TUSART_PutChar(char c);
 void TUSART_Print(const char* str);
 
 void TUSART_StartReception(void);
+
+void TUSART_ProcessInput(uint8_t* pData, uint16_t Size);
 
 void TUSART_UARTEx_RxEventCallback(uint16_t Size);
 

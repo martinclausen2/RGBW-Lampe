@@ -18,15 +18,18 @@ uint8_t aRXBufferUser[RX_BUFFER_SIZE];
 /**
   * @brief Data buffers used to manage received data in interrupt routine
   */
+
 uint8_t aRXBufferA[RX_BUFFER_SIZE];
 uint8_t aRXBufferB[RX_BUFFER_SIZE];
 
-__IO uint32_t     uwNbReceivedChars;
+__IO bool		rxDataPending;
+__IO uint32_t   uwNbReceivedChars;
 uint8_t *pBufferReadyForUser;
 uint8_t *pBufferReadyForReception;
 
 UART_HandleTypeDef *huart_terminal;
 
+/* call once during start up */
 void Init_Terminal(UART_HandleTypeDef *handle_huart)
 {
 	huart_terminal = handle_huart;
@@ -34,6 +37,17 @@ void Init_Terminal(UART_HandleTypeDef *handle_huart)
 	TUSART_StartReception();
 };
 
+/* needs to be called frequently */
+void Execute_Terminal()
+{
+	/* Process received data that has been extracted from Rx User buffer */
+	if (rxDataPending)
+		{
+		TUSART_ProcessInput(pBufferReadyForUser, uwNbReceivedChars);
+	    rxDataPending = false;
+		}
+	CLI_Execute();
+}
 
 void _reset_fcn()
 {
@@ -75,6 +89,7 @@ void TUSART_StartReception(void)
 	pBufferReadyForReception = aRXBufferA;
 	pBufferReadyForUser      = aRXBufferB;
 	uwNbReceivedChars        = 0;
+	rxDataPending 			 = false;
 
 //	HAL_StatusTypeDef HAL_UART_RegisterRxEventCallback(UART_HandleTypeDef *huart, pUART_RxEventCallbackTypeDef pCallback)
 	pUART_RxEventCallbackTypeDef pCallback = *HAL_UARTEx_RxEventCallback;
@@ -94,7 +109,6 @@ void TUSART_StartReception(void)
   */
   HAL_UARTEx_ReceiveToIdle_DMA(huart_terminal, aRXBufferUser, RX_BUFFER_SIZE);
 }
-
 
 /**
   * @brief  This function handles buffer containing received data
@@ -122,7 +136,6 @@ void TUSART_ProcessInput(uint8_t* pData, uint16_t Size)
 	CLI_EnterChar(c);
     pBuff++;
   }
-
 }
 
 /**
@@ -139,11 +152,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   uint8_t *ptemp;
   uint8_t i;
 
-  /* Check if number of received data in reception buffer has changed */
-  if (Size != old_pos)
+  /* Check if number of received data in reception buffer has changed
+   * and if older user buffer is already processed,
+   * if not hope for the aRXBufferUser not to overflow and wait for next interrupt
+   */
+  if ((Size != old_pos) & !rxDataPending)
   {
-    /* Check if position of index in reception buffer has simply be increased
-       of if end of buffer has been reached */
+
+	/* Check if position of index in reception buffer has simply be increased */
+    /* of if end of buffer has been reached */
     if (Size > old_pos)
     {
       /* Current position is higher than previous one */
@@ -151,7 +168,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
       /* Copy received data in "User" buffer for evacuation */
       for (i = 0; i < uwNbReceivedChars; i++)
       {
-        pBufferReadyForUser[i] = aRXBufferUser[old_pos + i];
+    	pBufferReadyForReception[i] = aRXBufferUser[old_pos + i];
       }
     }
     else
@@ -162,25 +179,25 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
       /* Copy received data in "User" buffer for evacuation */
       for (i = 0; i < uwNbReceivedChars; i++)
       {
-        pBufferReadyForUser[i] = aRXBufferUser[old_pos + i];
+    	pBufferReadyForReception[i] = aRXBufferUser[old_pos + i];
       }
       /* Check and continue with beginning of buffer */
       if (Size > 0)
       {
         for (i = 0; i < Size; i++)
         {
-          pBufferReadyForUser[uwNbReceivedChars + i] = aRXBufferUser[i];
+          pBufferReadyForReception[uwNbReceivedChars + i] = aRXBufferUser[i];
         }
         uwNbReceivedChars += Size;
       }
     }
-    /* Process received data that has been extracted from Rx User buffer */
-    TUSART_ProcessInput(pBufferReadyForUser, uwNbReceivedChars);
 
-    /* Swap buffers for next bytes to be processed */
-    ptemp = pBufferReadyForUser;
-    pBufferReadyForUser = pBufferReadyForReception;
-    pBufferReadyForReception = ptemp;
+	/* Swap buffers for next bytes to be processed */
+	ptemp = pBufferReadyForUser;
+	pBufferReadyForUser = pBufferReadyForReception;
+	pBufferReadyForReception = ptemp;
+
+	rxDataPending = true;
   }
   /* Update old_pos as new reference of position in User Rx buffer that
      indicates position to which data have been processed */

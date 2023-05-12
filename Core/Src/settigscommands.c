@@ -354,7 +354,6 @@ uint8_t SetBeepVolumeCmd()
 uint8_t PowerCmd()
 {
 	uint32_t light = 0;
-	uint32_t extPower = 0;
 
 	if (CLI_GetArgDecByFlag("-l", &light))
 	{

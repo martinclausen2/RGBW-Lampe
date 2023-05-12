@@ -179,7 +179,7 @@ int main(void)
       	Sample_ExtBrightness();
 	}
 	AcousticDDS_Compute();
-	CLI_Execute();
+	Execute_Terminal();
     HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     /* USER CODE END WHILE */
 
