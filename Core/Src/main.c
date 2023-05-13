@@ -177,6 +177,7 @@ int main(void)
 		Encoder();
       	MainMenu();
       	Sample_ExtBrightness();
+      	LEDOptions();
 	}
 	AcousticDDS_Compute();
 	Execute_Terminal();

@@ -14,6 +14,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("beep", 	SetBeepVolumeCmd, 0, TMC_None, "set beep volume - <-v volume>");
 	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light - <-l 1 | 0>");
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
+	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
 }
 
 void printValueArray(unsigned char(*values)[maxChannel])
@@ -393,4 +394,19 @@ uint8_t ResetSettingsCmd()
 	Rtc_SetAlarm();
 
 	return TE_OK;
+}
+
+uint8_t StatusLEDCmd()
+{
+	// be sure arguments
+	uint32_t flashCount = CLI_GetArgDec(0);
+	if (flashCount <= LEDFlashMaxSeq)
+	{
+		LEDSetupOptions(flashCount);
+		return TE_OK;
+	}
+	else
+	{
+		return TE_ArgErr;
+	}
 }

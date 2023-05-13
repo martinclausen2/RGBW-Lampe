@@ -24,5 +24,6 @@ uint8_t SetBeepVolumeCmd();
 uint8_t AlarmCmd();
 uint8_t PowerCmd();
 uint8_t ResetSettingsCmd();
+uint8_t StatusLEDCmd();
 
 #endif // _SETTINGSCOMMANDS_H_
