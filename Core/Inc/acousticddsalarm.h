@@ -9,6 +9,7 @@
 #define INC_ACOUSTICDDSALARM_H_
 
 #include "stm32l1xx_hal.h"
+#include "main.h"
 #include <stdbool.h>
 
 extern DAC_HandleTypeDef hdac;

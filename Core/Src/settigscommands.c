@@ -11,7 +11,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("alarmschedule", AlarmScheduleCmd, 1, TMC_None, "set alarm schedule - [alarm no] <-w weekday> <-h hour> <-m minute>");
 	CLI_AddCmd("alarmsetting", AlarmSettingsCmd, 0, TMC_None, "set alarm parameters - <-f time to fade-in light> <-si time to signal> <-sn snooze time>");
 	CLI_AddCmd("alarm", AlarmCmd, 0, TMC_None, "trigger, reset, set alarm skip count - <-a 1 | 0> <-s alarm skip count>");
-	CLI_AddCmd("beep", 	SetBeepVolumeCmd, 0, TMC_None, "set beep volume - <-v volume>");
+	CLI_AddCmd("beep", 	SetBeepVolumeCmd, 0, TMC_None, "set beep status - <-s 1 | 0> volume - <-v volume>");
 	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light - <-l 1 | 0>");
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
 	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
@@ -343,6 +343,7 @@ uint8_t AlarmCmd()
 uint8_t SetBeepVolumeCmd()
 {
 	uint32_t volume = 0;
+	uint32_t status = 0;
 
 	// optional arguments
 	if (CLI_GetArgDecByFlag("-v", &volume) & (volume <= maxBeepVolume))
@@ -350,7 +351,19 @@ uint8_t SetBeepVolumeCmd()
 		GLOBAL_settings_ptr->BeepVolume = (uint8_t)volume;
 	}
 
-	Beep();
+	// optional arguments
+	if (CLI_GetArgDecByFlag("-s", &status))
+	{
+		if(status)
+		{
+			StartAcousticDDSAlarm();
+		}
+		else
+		{
+			StopAcousticDDSAlarm();
+		}
+	}
+
 
 	CLI_Printf("\r\nBeep volume: %d", (int)GLOBAL_settings_ptr->BeepVolume);
 
