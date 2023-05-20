@@ -11,6 +11,7 @@
 
 #define dacCacheSize 0x0100u
 #define sizesound 5u
+#define beepDuration 250u
 
 bool AcousticAlarmFlag = false;
 
@@ -29,9 +30,8 @@ void Beep()
 {
 	StartAcousticDDSAlarm();
 	uint32_t tickstart = HAL_GetTick();
-	uint32_t wait = 250;
 
-	while((HAL_GetTick() - tickstart) < wait)
+	while((HAL_GetTick() - tickstart) < beepDuration)
 	{
 		AcousticDDS_Compute();
 	}

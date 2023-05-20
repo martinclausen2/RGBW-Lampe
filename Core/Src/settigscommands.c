@@ -363,7 +363,10 @@ uint8_t SetBeepVolumeCmd()
 			StopAcousticDDSAlarm();
 		}
 	}
-
+	else
+	{
+		Beep();
+	}
 
 	CLI_Printf("\r\nBeep volume: %d", (int)GLOBAL_settings_ptr->BeepVolume);
 
