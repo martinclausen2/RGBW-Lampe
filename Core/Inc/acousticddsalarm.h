@@ -20,7 +20,6 @@ extern bool AcousticAlarmFlag;
 void Beep();
 void StartAcousticDDSAlarm();
 void StopAcousticDDSAlarm();
-void AcousticDDS_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac);
-void AcousticDDS_Compute();
+void Acoustic_ConvCpltCallbackCh1(DAC_HandleTypeDef *hdac);
 
 #endif /* INC_ACOUSTICDDSALARM_H_ */
