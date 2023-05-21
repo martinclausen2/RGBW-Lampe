@@ -41,24 +41,24 @@ typedef struct {
 } alarm_t;
 
 typedef struct {
-  uint32_t version;
-  uint32_t revision;
-  unsigned char RC5Addr;				//IR remote control address
-  unsigned char ReceiverMode;			//Mode for acting on commands from other devices
-  unsigned char SenderMode;				//Mode for sending commands to other devices
-  unsigned char LCDContrast;			//LCD contrast setting
-  unsigned int ExtBrightness_last;		//external brightness during lights off divided by 256
-  unsigned char Brightness_start[maxChannel];	//value before lights off
-  unsigned char minBrightness[maxChannel];		//minimum brightness after power on and recalculation using measured brightness
-  unsigned char maxBrightness[maxChannel];		//maximum brightness
-  unsigned char AlarmBrightness[maxChannel];		//maximum brightness targeted during alarm
-  unsigned int PWM_Offset[maxChannel];			//PWM value, where the driver effectively starts to generate an output
-  unsigned char LightFading;			//Minutes to fade light in
-  unsigned char AlarmTime2Signal;		//Delay after alarm until noise is being generated
-  unsigned char AlarmTimeSnooze;		//Snooze Time
-  unsigned char BeepVolume;				//Volume of the key beep
-  alarm_t Alarm[maxAlarm];
-  uint32_t crc32;
+	uint32_t version;
+	uint32_t revision;
+	unsigned char RC5Addr;				//IR remote control address
+	unsigned char ReceiverMode;			//Mode for acting on commands from other devices
+	unsigned char SenderMode;				//Mode for sending commands to other devices
+	unsigned char LCDContrast;			//LCD contrast setting
+	unsigned int ExtBrightness_last;		//external brightness during lights off divided by 256
+	unsigned char Brightness_start[maxChannel];	//value before lights off
+	unsigned char minBrightness[maxChannel];		//minimum brightness after power on and recalculation using measured brightness
+	unsigned char maxBrightness[maxChannel];		//maximum brightness
+	unsigned char AlarmBrightness[maxChannel];		//maximum brightness targeted during alarm
+	unsigned int PWM_Offset[maxChannel];			//PWM value, where the driver effectively starts to generate an output
+	unsigned char LightFading;			//Minutes to fade light in
+	unsigned char AlarmTime2Signal;		//Delay after alarm until noise is being generated
+	unsigned char AlarmTimeSnooze;		//Snooze Time
+	unsigned char BeepVolume;				//Volume of the key beep
+	alarm_t Alarm[maxAlarm];
+	uint32_t crc32;
 } settings_t;
 
 extern settings_t *GLOBAL_settings_ptr;

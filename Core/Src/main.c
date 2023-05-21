@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2022 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -141,50 +141,50 @@ int main(void)
   MX_CRC_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  //load RAM values from EEPROM
-  SettingsInit(&hcrc);
-  SenderMode = GLOBAL_settings_ptr->SenderMode;
+	//load RAM values from EEPROM
+	SettingsInit(&hcrc);
+	SenderMode = GLOBAL_settings_ptr->SenderMode;
 
-  Init_Terminal(&huart1);
-  SettingsCommands_Init();
-  Rtc_Init();
-  PWM_Init(&htim2);
-  Status_LED_Init(&htim3);
-  Encoder_Init(&htim4);
-  Init_ExtBrightness(&hadc);
-  Init_MainMenu();
+	Init_Terminal(&huart1);
+	SettingsCommands_Init();
+	Rtc_Init();
+	PWM_Init(&htim2);
+	Status_LED_Init(&htim3);
+	Encoder_Init(&htim4);
+	Init_ExtBrightness(&hadc);
+	Init_MainMenu();
 
-  //planned tim9 => alternative RC5 decoder, tim10 => RC5 sender, spi2 => LCD, i2c => acceleration sensor
+	//planned tim9 => alternative RC5 decoder, tim10 => RC5 sender, spi2 => LCD, i2c => acceleration sensor
 
-/*##-1- Start the TIM Base generation in interrupt mode ####################*/
-  HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
-  HAL_TIM_Base_Start_IT(&htim11); //main control loop
+	/*##-1- Start the TIM Base generation in interrupt mode ####################*/
+	HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
+	HAL_TIM_Base_Start_IT(&htim11); //main control loop
 
-  //Start ESP32 reset pin is inverted
-  HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
+	//Start ESP32 reset pin is inverted
+	HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
 
-  SwAllLightOn();
+	SwAllLightOn();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	if(TimerFlag)
+	while (1)
 	{
-		TimerFlag=0;
-		Keys(!HAL_GPIO_ReadPin(ENC_SW_GPIO_Port, ENC_SW_Pin));
-		Encoder();
-      	MainMenu();
-      	Sample_ExtBrightness();
-      	LEDOptions();
-	}
-	Execute_Terminal();
-    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		if(TimerFlag)
+		{
+			TimerFlag=0;
+			Keys(!HAL_GPIO_ReadPin(ENC_SW_GPIO_Port, ENC_SW_Pin));
+			Encoder();
+			MainMenu();
+			Sample_ExtBrightness();
+			LEDOptions();
+		}
+		Execute_Terminal();
+		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -1021,21 +1021,21 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /*
-* @brief  Period elapsed callback in non blocking mode
-* @param  htim: TIM handle
-* @retval None
-*/
+ * @brief  Period elapsed callback in non blocking mode
+ * @param  htim: TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-if (htim->Instance == htim6.Instance)
-{
-	  RC5SignalSampling(HAL_GPIO_ReadPin(IR_IN_GPIO_Port, IR_IN_Pin));
-}
-else if (htim->Instance == htim11.Instance)
-{
-	//set flag
- 	TimerFlag = true;
-}
+	if (htim->Instance == htim6.Instance)
+	{
+		RC5SignalSampling(HAL_GPIO_ReadPin(IR_IN_GPIO_Port, IR_IN_Pin));
+	}
+	else if (htim->Instance == htim11.Instance)
+	{
+		//set flag, should be set at a frequency of 100Hz
+		TimerFlag = true;
+	}
 }
 
 /* USER CODE END 4 */
@@ -1047,11 +1047,11 @@ else if (htim->Instance == htim11.Instance)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1)
+	{
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -1066,7 +1066,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }

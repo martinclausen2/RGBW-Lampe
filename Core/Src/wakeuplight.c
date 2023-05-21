@@ -29,7 +29,7 @@ void CheckAlarm()
 		Rtc_SetAlarm();
 
 		//execute a new alarm, but only if none is already running
-		if (0==AlarmFlag)
+		if (!AlarmFlag)
 		{
 			for (int i = 0; i < maxChannel;	i++)
 			{
@@ -46,22 +46,22 @@ void CheckAlarm()
 
 	//wake-up light dimming all channels
 	if (AlarmFlag)
-		{
+	{
 		for (int i = 0; i < maxChannel;	i++)
-			{
+		{
 			Alarm_StepDim(i);
-			}
 		}
+	}
 
 	//count down to start acoustic signal
 	if (1 < Minutes2Signal)
-		{
+	{
 		--Minutes2Signal;
-		}
+	}
 	else if (1 == Minutes2Signal)
-		{
+	{
 		StartAcousticDDSAlarm();
-		}
+	}
 }
 
 //stop any brightness increase, count down to acoustic alarm, or acoustic alarm
@@ -87,21 +87,21 @@ void AlarmSnooze()
 void Alarm_StepDim(unsigned char i)
 {
 	if (AlarmDim_Cnt[i])
-		{
+	{
 		--AlarmDim_Cnt[i];				//count down step
-		}
+	}
 	else								//dimming step
+	{
+		if (Brightness[i] < GLOBAL_settings_ptr->AlarmBrightness[i])
 		{
-		if (Brightness[i+1] < GLOBAL_settings_ptr->AlarmBrightness[i])
-			{
 			AlarmDim_Cnt[i]=AlarmDim_Cnt_Reload[i];	//reload count down
 			PWM_SetupDim(i, Brightness_steps, 1);	//setup brightness
-			}
-		else
-			{
-			AlarmFlag=0;				//we reached target brightness!
-			}
 		}
+		else
+		{
+			AlarmFlag=0;				//we reached target brightness!
+		}
+	}
 }
 
 
