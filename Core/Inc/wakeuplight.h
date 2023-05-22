@@ -19,6 +19,8 @@
 #define cases 4
 #define callsinminute timerfrequency/timerprescaler/timerreload/cases*secondsinminute
 
+#define AlarmBrightnessStep 1
+
 //check if any alarm is set to be executed NOW
 void CheckAlarm();
 

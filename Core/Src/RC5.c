@@ -58,7 +58,7 @@ void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 //setup brightness values
 void SetLightRemote(unsigned char i, signed char steps)
 {
-	PWM_SetupDim(i, Brightness_steps, steps);
+	PWM_SetupDim(i, Brightness_steps, steps, 0);
 	FocusChannel=i;
 	LightOn=1;
 	LEDOn();

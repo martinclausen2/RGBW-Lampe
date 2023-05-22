@@ -7,18 +7,20 @@
 
 #include "setbrightness.h"
 
-TIM_HandleTypeDef *htim_PWM;				//handle to address timer
+TIM_HandleTypeDef *htim_PWM;					//handle to address timer
 
 bool LightOn;
 int FocusChannel;
-unsigned char Brightness[maxChannel];		//current value
+unsigned char Brightness[maxChannel];			//current value
 
-unsigned int PWM_Offset[] = {0,0,0,0};   	//PWM value, where the driver effectively starts to generate an output
-unsigned char WriteTimer;					/* time until Brightness is saved in calls to StoreBrightness() */
+unsigned int PWM_Offset[] = {0,0,0,0};  	 	//PWM value, where the driver effectively starts to generate an output
+unsigned char WriteTimer;						/* time until Brightness is saved in calls to StoreBrightness() */
 
-signed int PWM_set[] = {0,0,0,0};			//current PWM value
-signed int PWM_incr[] = {0,0,0,0};			//PWM dimming step size
-unsigned int PWM_incr_cnt[] = {0,0,0,0};	//no of steps required to reach target PWM value
+signed int PWM_set[] = {0,0,0,0};				//current PWM value
+signed int PWM_incr[] = {0,0,0,0};				//PWM dimming step size
+unsigned int PWM_incr_cnt[] = {0,0,0,0};		//no of steps required to reach target PWM value
+unsigned int PWM_step_cnt[] = {0,0,0,0};		//no of steps until next PWM step
+unsigned int PWM_step_cnt_reload[] = {0,0,0,0};	//no of steps required between two PWM steps, required to fade more smoothly for slow and small changes seen with wake up and mod light
 
 void PWM_Init(TIM_HandleTypeDef *handle_tim)
 {
@@ -62,29 +64,64 @@ void PWM_StepDim()		// perform next dimming step, must frequently called for dim
 {
 	if (PWM_incr_cnt[0])
 	{
-		htim_PWM->Instance->CCR3 = PWM_SetPulseWidth(0);
+		if (PWM_step_cnt[0])
+		{
+			PWM_step_cnt[0]--;
+		}
+		else
+		{
+			htim_PWM->Instance->CCR3 = PWM_SetPulseWidth(0);
+			PWM_step_cnt[0] = PWM_step_cnt_reload[0];
+		}
 	}
 
 	if (PWM_incr_cnt[1])
 	{
-		htim_PWM->Instance->CCR1 = PWM_SetPulseWidth(1);
+		if (PWM_step_cnt[1])
+		{
+			PWM_step_cnt[1]--;
+		}
+		else
+		{
+			htim_PWM->Instance->CCR1 = PWM_SetPulseWidth(1);
+
+			PWM_step_cnt[1] = PWM_step_cnt_reload[1];
+		}
 	}
 
 	if (PWM_incr_cnt[2])
 	{
-		htim_PWM->Instance->CCR4 = PWM_SetPulseWidth(2);
+		if (PWM_step_cnt[2])
+		{
+			PWM_step_cnt[2]--;
+		}
+		else
+		{
+			htim_PWM->Instance->CCR4 = PWM_SetPulseWidth(2);
+			PWM_step_cnt[2] = PWM_step_cnt_reload[2];}
 	}
 
 	if (PWM_incr_cnt[3])
 	{
-		htim_PWM->Instance->CCR2 = PWM_SetPulseWidth(3);
+		if (PWM_step_cnt[3])
+		{
+			PWM_step_cnt[3]--;
+		}
+		else
+		{
+			htim_PWM->Instance->CCR2 = PWM_SetPulseWidth(3);
+			PWM_step_cnt[3] = PWM_step_cnt_reload[3];}
 	}
 }
 
-void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps)
+void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, unsigned int step_cnt)
 {
 	signed int temp;
 	limit=0;						//reset limit indicator
+
+	PWM_step_cnt_reload[i] = step_cnt;
+	PWM_step_cnt[i] = step_cnt;
+
 	temp = Brightness[i] + Steps;
 	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)		//avoid overflow
 	{
@@ -122,7 +159,7 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps)
 
 void PWM_SetupNow(unsigned char i, signed char Steps)
 {
-	PWM_SetupDim(i, 1, Steps);
+	PWM_SetupDim(i, 1, Steps, 0);
 	PWM_StepDim();
 }
 
@@ -179,14 +216,14 @@ void SwLightOn(unsigned char i, unsigned int relBrightness)
 	{
 		Brightness[i] = temp;						// or just take the calculated value!
 	}
-	PWM_SetupDim(i, fadetime, 0);
+	PWM_SetupDim(i, fadetime, 0, 0);
 }
 
 void SwLightOff(unsigned char i)
 {
 	GLOBAL_settings_ptr->Brightness_start[i]=Brightness[i];
 	Brightness[i]=0;
-	PWM_SetupDim(i, fadetime, 0);
+	PWM_SetupDim(i, fadetime, 0, 0);
 }
 
 void SwAllLightOn()

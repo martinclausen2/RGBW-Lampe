@@ -129,7 +129,7 @@ void MainMenu()
 		{
 			if (LightOn)
 			{
-				PWM_SetupDim(FocusChannel, Brightness_steps, EncoderSteps);
+				PWM_SetupDim(FocusChannel, Brightness_steps, EncoderSteps, 0);
 				EncoderSteps = 0;								//ack any steps
 				LEDSetupLimit();
 				WriteTimer=WriteTime;

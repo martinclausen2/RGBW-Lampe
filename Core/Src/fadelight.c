@@ -5,7 +5,9 @@
  *      Author: Martin
  */
 
-#define colorCount 5
+#include "fadelight.h"
+
+#define colorCount 11
 
 // array with meaning full color combinations
 

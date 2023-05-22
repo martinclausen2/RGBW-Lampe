@@ -94,8 +94,11 @@ void Alarm_StepDim(unsigned char i)
 	{
 		if (Brightness[i] < GLOBAL_settings_ptr->AlarmBrightness[i])
 		{
-			AlarmDim_Cnt[i]=AlarmDim_Cnt_Reload[i];	//reload count down
-			PWM_SetupDim(i, Brightness_steps, 1);	//setup brightness
+			int dimsteps = Brightness[i] + AlarmBrightnessStep;
+			dimsteps = dimsteps * dimsteps - Brightness[i] * Brightness[i];
+
+			AlarmDim_Cnt[i]=AlarmDim_Cnt_Reload[i];		//reload count down
+			PWM_SetupDim(i, dimsteps, AlarmBrightnessStep, AlarmDim_Cnt_Reload[i]*cases/dimsteps);	//setup brightness
 		}
 		else
 		{

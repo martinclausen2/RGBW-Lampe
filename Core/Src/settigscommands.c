@@ -111,7 +111,7 @@ uint8_t BrightnessCmd()
 			if (cflag & bflag)
 			{
 				GLOBAL_settings_ptr->PWM_Offset[channel_no]=brightness_value;
-				PWM_SetupDim(channel_no, fadetime, 0);
+				PWM_SetupDim(channel_no, fadetime, 0, 0);
 			}
 			printIntValueArray(&(GLOBAL_settings_ptr->PWM_Offset));
 			break;
@@ -120,7 +120,7 @@ uint8_t BrightnessCmd()
 			if (cflag & bflag)
 			{
 				Brightness[channel_no]=brightness_value;
-				PWM_SetupDim(channel_no, fadetime, 0);
+				PWM_SetupDim(channel_no, fadetime, 0, 0);
 			}
 			printValueArray(&Brightness);
 			break;

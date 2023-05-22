@@ -33,7 +33,7 @@ void SwLightOn(unsigned char i, unsigned int relBrightness);
 void SwAllLightOn();
 void SwLightOff(unsigned char i);
 void SwAllLightOff();
-void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps);
+void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, unsigned int step_cnt);
 void ToggleFocus();
 int PreviewToggelFocus();
 void SetExtBrightness_last();
