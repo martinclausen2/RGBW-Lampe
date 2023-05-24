@@ -11,7 +11,7 @@ TIM_HandleTypeDef *htim_PWM;					//handle to address timer
 
 bool LightOn;
 int FocusChannel;
-unsigned char Brightness[maxChannel];			//current value
+unsigned char Brightness[maxVirtualChannel];	//current value
 
 unsigned int PWM_Offset[] = {0,0,0,0};  	 	//PWM value, where the driver effectively starts to generate an output
 unsigned char WriteTimer;						/* time until Brightness is saved in calls to StoreBrightness() */
@@ -119,9 +119,6 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, un
 	signed int temp;
 	limit=0;						//reset limit indicator
 
-	PWM_step_cnt_reload[i] = step_cnt;
-	PWM_step_cnt[i] = step_cnt;
-
 	temp = Brightness[i] + Steps;
 	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)		//avoid overflow
 	{
@@ -135,24 +132,30 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, un
 	}
 	Brightness[i] = temp;
 
-	temp = temp * (temp + 2) - PWM_set[i];
-	if ((temp > PWM_dimsteps) || ((temp<0) && (-temp>PWM_dimsteps)))	// if we have more difference then steps to go
+	if (i < maxChannel)
 	{
-		PWM_incr[i] = temp / PWM_dimsteps;
-		PWM_set[i] += (temp - PWM_incr[i]*PWM_dimsteps); 		//calculate remainder, brackets to avoid overflow!?
-		PWM_incr_cnt[i] = PWM_dimsteps;
-	}
-	else
-	{
-		if (0<temp)		// if we would have a step size smaller then one, we better reduce the number of steps
+		PWM_step_cnt_reload[i] = step_cnt;
+		PWM_step_cnt[i] = step_cnt;
+
+		temp = temp * (temp + 2) - PWM_set[i];
+		if ((temp > PWM_dimsteps) || ((temp<0) && (-temp>PWM_dimsteps)))	// if we have more difference then steps to go
 		{
-			PWM_incr[i] = 1;
-			PWM_incr_cnt[i] = temp;
+			PWM_incr[i] = temp / PWM_dimsteps;
+			PWM_set[i] += (temp - PWM_incr[i]*PWM_dimsteps); 		//calculate remainder, brackets to avoid overflow!?
+			PWM_incr_cnt[i] = PWM_dimsteps;
 		}
-		else if (0>temp)
+		else
 		{
-			PWM_incr[i] = -1;
-			PWM_incr_cnt[i] = -temp;				//count must be a positive number!
+			if (0<temp)		// if we would have a step size smaller then one, we better reduce the number of steps
+			{
+				PWM_incr[i] = 1;
+				PWM_incr_cnt[i] = temp;
+			}
+			else if (0>temp)
+			{
+				PWM_incr[i] = -1;
+				PWM_incr_cnt[i] = -temp;				//count must be a positive number!
+			}
 		}
 	}
 }
@@ -266,7 +269,7 @@ void SwAllLightOff()
 void ToggleFocus()
 {
 	FocusChannel++;
-	if (FocusChannel >= maxChannel)
+	if (FocusChannel >= maxVirtualChannel)
 		FocusChannel = 0;
 }
 
@@ -274,7 +277,7 @@ int PreviewToggelFocus()
 {
 	int temp = FocusChannel;
 	temp++;
-	if (temp >= maxChannel)
+	if (temp >= maxVirtualChannel)
 		temp = 0;
 	return temp;
 }

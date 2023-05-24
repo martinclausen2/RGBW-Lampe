@@ -92,6 +92,7 @@ void SettingsReset2Defaults(void){
 	GLOBAL_settings_ptr->Brightness_start[1] = 0;		//value before lights off
 	GLOBAL_settings_ptr->Brightness_start[2] = 0;		//value before lights off
 	GLOBAL_settings_ptr->Brightness_start[3] = 0;		//value before lights off
+	GLOBAL_settings_ptr->Brightness_start[4] = 0;		//value before lights off
 	GLOBAL_settings_ptr->minBrightness[0] = 7;			//minimum brightness after power on and recalculation using measured brightness
 	GLOBAL_settings_ptr->minBrightness[1] = 7;			//minimum brightness after power on and recalculation using measured brightness
 	GLOBAL_settings_ptr->minBrightness[2] = 7;			//minimum brightness after power on and recalculation using measured brightness
@@ -100,6 +101,7 @@ void SettingsReset2Defaults(void){
 	GLOBAL_settings_ptr->maxBrightness[1] = 255;		//maximum brightness
 	GLOBAL_settings_ptr->maxBrightness[2] =  52;		//maximum brightness
 	GLOBAL_settings_ptr->maxBrightness[3] = 255;		//maximum brightness
+	GLOBAL_settings_ptr->maxBrightness[4] = 255;		//maximum brightness
 	GLOBAL_settings_ptr->AlarmBrightness[0] = 128;		//maximum brightness targeted during alarm
 	GLOBAL_settings_ptr->AlarmBrightness[1] = 255;		//maximum brightness targeted during alarm
 	GLOBAL_settings_ptr->AlarmBrightness[2] =  52;		//maximum brightness targeted during alarm
@@ -111,6 +113,7 @@ void SettingsReset2Defaults(void){
 	GLOBAL_settings_ptr->LightFading = 16;				//Minutes to fade light in
 	GLOBAL_settings_ptr->AlarmTime2Signal = 11;			//Delay after alarm until noise is being generated
 	GLOBAL_settings_ptr->AlarmTimeSnooze = 6;			//Snooze Time
+	GLOBAL_settings_ptr->FadingTime = 10;				//Seconds to fade from one color setting to next
 	GLOBAL_settings_ptr->BeepVolume = 0x40;				//Volume of the key beep
 
 	alarm_t alarms[maxAlarm] = {

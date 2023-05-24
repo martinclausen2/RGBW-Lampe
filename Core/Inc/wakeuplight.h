@@ -17,7 +17,8 @@
 #define timerprescaler 100
 #define timerreload 1600
 #define cases 4
-#define callsinminute timerfrequency/timerprescaler/timerreload/cases*secondsinminute
+#define callsinsecond timerfrequency/timerprescaler/timerreload/cases
+#define callsinminute callsinsecond*secondsinminute
 
 #define AlarmBrightnessStep 1
 

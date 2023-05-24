@@ -17,7 +17,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
 }
 
-void printValueArray(unsigned char(*values)[maxChannel])
+void printValueArray(unsigned char(*values)[])
 {
 	int i;
 	for (i = 0; i < maxChannel;	i++)
@@ -26,7 +26,7 @@ void printValueArray(unsigned char(*values)[maxChannel])
 	};
 }
 
-void printIntValueArray(unsigned int(*values)[maxChannel])
+void printIntValueArray(unsigned int(*values)[])
 {
 	int i;
 	for (i = 0; i < maxChannel;	i++)

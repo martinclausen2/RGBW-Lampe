@@ -25,7 +25,7 @@ extern bool LightOn;
 
 extern int FocusChannel;
 
-extern unsigned char Brightness[maxChannel];	//current value
+extern unsigned char Brightness[maxVirtualChannel];	//current value
 
 void PWM_Init(TIM_HandleTypeDef *htim_PWM);
 void PWM_StepDim();
