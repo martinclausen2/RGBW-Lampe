@@ -15,6 +15,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("power", PowerCmd, 0, TMC_None, "switch light - <-l 1 | 0>");
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
 	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
+	CLI_AddCmd("fadelight", FadeLightCmd, 0, TMC_None, "mood light - <-f 1 | 0> time - <-t time> <-b brightness> <-mb maximum brightness>");
 }
 
 void printValueArray(unsigned char(*values)[])
@@ -96,6 +97,7 @@ uint8_t BrightnessCmd()
 			{
 				GLOBAL_settings_ptr->maxBrightness[channel_no]=brightness_value;
 			}
+			Init_FadeLight();
 			printValueArray(&(GLOBAL_settings_ptr->maxBrightness));
 			break;
 		case 3:
@@ -339,7 +341,6 @@ uint8_t AlarmCmd()
 	return TE_OK;
 }
 
-
 uint8_t SetBeepVolumeCmd()
 {
 	uint32_t volume = 0;
@@ -425,4 +426,51 @@ uint8_t StatusLEDCmd()
 	{
 		return TE_ArgErr;
 	}
+}
+
+uint8_t FadeLightCmd()
+{
+	uint32_t time = 0;
+	uint32_t status = 0;
+	uint32_t brightness = 0;
+	uint32_t maxBrightness = 0;
+
+	// optional arguments
+	if (CLI_GetArgDecByFlag("-t", &time))
+	{
+		GLOBAL_settings_ptr->FadingTime = time;
+	}
+
+	if (CLI_GetArgDecByFlag("-b", &brightness) & (brightness <= maxBrightnessLimit))
+	{
+		Brightness[FadeLightChannel] = brightness;
+	}
+
+	if (CLI_GetArgDecByFlag("-mb", &brightness) & (brightness <= maxBrightnessLimit))
+	{
+		GLOBAL_settings_ptr->maxBrightness[FadeLightChannel] = brightness;
+	}
+
+	// optional arguments
+	if (CLI_GetArgDecByFlag("-f", &status))
+	{
+		if(status)
+		{
+			FadeLight();
+			FocusChannel = FadeLightChannel;
+		}
+		else
+		{
+			ResetFadeLight();
+			FocusChannel = 0;
+		}
+	}
+
+	CLI_Printf("\r\nFading time: %d s", (int)GLOBAL_settings_ptr->FadingTime);
+	CLI_Printf("\r\nRelative brightness: %d", (int)Brightness[FadeLightChannel]);
+	CLI_Printf("\r\nMax relative brightness: %d", (int)GLOBAL_settings_ptr->maxBrightness[FadeLightChannel]);
+
+	SettingsWrite();
+
+	return TE_OK;
 }

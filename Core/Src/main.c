@@ -152,7 +152,7 @@ int main(void)
 	Status_LED_Init(&htim3);
 	Encoder_Init(&htim4);
 	Init_ExtBrightness(&hadc);
-	Init_MainMenu();
+	Init_FadeLight();
 
 	//planned tim9 => alternative RC5 decoder, tim10 => RC5 sender, spi2 => LCD, i2c => acceleration sensor
 

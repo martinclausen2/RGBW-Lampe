@@ -8,6 +8,7 @@
 #include "extbrightness.h"
 #include "setbrightness.h"
 #include "acousticddsalarm.h"
+#include "fadelight.h"
 
 void SettingsCommands_Init();
 
@@ -25,5 +26,6 @@ uint8_t AlarmCmd();
 uint8_t PowerCmd();
 uint8_t ResetSettingsCmd();
 uint8_t StatusLEDCmd();
+uint8_t FadeLightCmd();
 
 #endif // _SETTINGSCOMMANDS_H_

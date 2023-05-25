@@ -14,8 +14,6 @@
 void FadeLight();
 void ResetFadeLight();
 
-void FadeLight_StepDim(unsigned char i);
-int DeltaBrightness(unsigned int i);
-int Calc_FadeDim_Cnt_Reload(int deltaBrightness);
+int FadeLight_StepDim(unsigned int i);
 
 #endif /* INC_FADELIGHT_H_ */

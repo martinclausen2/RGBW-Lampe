@@ -26,6 +26,5 @@
 #define KeyPressLonger	KeyPressLong*2
 
 void MainMenu();
-void Init_MainMenu();
 
 #endif /* MAINMENU_H_ */

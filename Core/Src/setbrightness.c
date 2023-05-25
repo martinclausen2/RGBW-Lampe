@@ -114,12 +114,12 @@ void PWM_StepDim()		// perform next dimming step, must frequently called for dim
 	}
 }
 
-void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, unsigned int step_cnt)
+void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int brightnessStep, unsigned int timeSteps)
 {
 	signed int temp;
 	limit=0;						//reset limit indicator
 
-	temp = Brightness[i] + Steps;
+	temp = Brightness[i] + brightnessStep;
 	if (GLOBAL_settings_ptr->maxBrightness[i] < temp)		//avoid overflow
 	{
 		temp = GLOBAL_settings_ptr->maxBrightness[i];
@@ -134,8 +134,8 @@ void PWM_SetupDim(unsigned char i, signed int PWM_dimsteps, signed int Steps, un
 
 	if (i < maxChannel)
 	{
-		PWM_step_cnt_reload[i] = step_cnt;
-		PWM_step_cnt[i] = step_cnt;
+		PWM_step_cnt_reload[i] = timeSteps;
+		PWM_step_cnt[i] = timeSteps;
 
 		temp = temp * (temp + 2) - PWM_set[i];
 		if ((temp > PWM_dimsteps) || ((temp<0) && (-temp>PWM_dimsteps)))	// if we have more difference then steps to go

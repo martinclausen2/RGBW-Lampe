@@ -7,10 +7,6 @@
 
 #include "mainmenu.h"
 
-void Init_MainMenu()
-{
-}
-
 void MainMenu()
 {
 	static unsigned char actionCounter = 0xFF;
@@ -105,6 +101,7 @@ void MainMenu()
 			else if (KeyPressLong > KeyPressDuration)
 			{
 				AlarmEnd();
+				ResetFadeLight();
 				if (LightOn)
 				{
 					//								SendRC5(RC5Addr_com, RC5Cmd_Off, 1, ComModeAll, RC5Cmd_Repeats);

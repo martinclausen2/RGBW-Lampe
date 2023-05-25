@@ -10,18 +10,17 @@
 #define colorCount 11
 
 unsigned int FadeDim_Cnt[maxChannel] = {0,0,0,0};
-unsigned int FadeDim_Cnt_Reload[maxChannel] = {0,0,0,0};
-signed int FadeDimStep[maxChannel] = {0,0,0,0};
 
 unsigned int fadeColor = colorCount;
+unsigned int oldFadeColor = colorCount-1;
 
 bool fadeLightFlag = false;
 
 // array with meaning full color combinations
 
-static unsigned int colors[colorCount][maxChannel]=
+unsigned int colors[colorCount][maxChannel]=
 {
-		{255, 000, 000, 000},
+		{128, 000, 000, 000},
 
 		{ 95, 255, 000, 000},
 		{000, 255, 000, 000},
@@ -37,47 +36,40 @@ static unsigned int colors[colorCount][maxChannel]=
 		{120, 000, 000, 180}
 };
 
+// limit entry to max brightness
+void Init_FadeLight()
+{
+	for (unsigned int j = 0; j < colorCount; j++)
+	{
+		for (unsigned int i = 0; i < maxChannel; i++)
+		{
+			if (colors[j][i] > GLOBAL_settings_ptr->maxBrightness[i])
+			{
+				colors[j][i] = GLOBAL_settings_ptr->maxBrightness[i];
+			}
+		}
+	}
+}
+
 void FadeLight()
 {
 	bool fading = false;
 	if (fadeLightFlag)
 	{
-		for (int i = 0; i < maxChannel;	i++)
+		for (unsigned int i = 0; i < maxChannel; i++)
 		{
-			FadeLight_StepDim(i);
-			fading = fading || DeltaBrightness(i);
+			fading = fading || FadeLight_StepDim(i);
 		}
 	}
 	if (!fadeLightFlag || !fading)
 	{
 		fadeLightFlag = true;
 
+		oldFadeColor = fadeColor;
 		fadeColor++;
 		if (fadeColor >= colorCount)
 		{
 			fadeColor = 0;
-		}
-
-		for (int i = 0; i < maxChannel;	i++)
-		{
-			// fade to next brightness
-			int deltaBrightness = DeltaBrightness(i);
-			if (deltaBrightness > 0)
-			{
-				FadeDim_Cnt_Reload[i]=Calc_FadeDim_Cnt_Reload(deltaBrightness);
-				FadeDimStep[i] = 1;
-			}
-			else if (deltaBrightness < 0)
-			{
-				FadeDim_Cnt_Reload[i]=Calc_FadeDim_Cnt_Reload(-deltaBrightness);
-				FadeDimStep[i] = -1;
-			}
-			else
-			{
-				FadeDim_Cnt_Reload[i]=1;		//no change
-				FadeDimStep[i] = 0;
-			}
-			FadeDim_Cnt[i]=0; 					//schedule immediate calculation
 		}
 	}
 }
@@ -87,35 +79,49 @@ void ResetFadeLight()
 	fadeLightFlag = false;
 }
 
-int DeltaBrightness(unsigned int i)
-{
-	int temp = ((Brightness[FadeLightChannel]*colors[fadeColor][i]) >> 8) - Brightness[i];
-	return temp;
-}
-
-int Calc_FadeDim_Cnt_Reload(int deltaBrightness)
-{
-	return GLOBAL_settings_ptr->FadingTime*callsinsecond/deltaBrightness;
-}
-
-
 //fade light dimming
-void FadeLight_StepDim(unsigned char i)
+int FadeLight_StepDim(unsigned int i)
 {
+	int dimStep = 0;
+	int deltaBrightness = ((Brightness[FadeLightChannel]*colors[fadeColor][i]) >> 8) - Brightness[i];
+
 	if (FadeDim_Cnt[i])
 	{
 		--FadeDim_Cnt[i];							//count down step
 	}
-	else if (DeltaBrightness(i))					//dimming step
+	else if (deltaBrightness)						//dimming step
 	{
-		int dimsteps = Brightness[i] + FadeDimStep[i];
-		dimsteps = dimsteps * dimsteps - Brightness[i] * Brightness[i];
+		int totalDeltaBrightness = (Brightness[FadeLightChannel]*(colors[fadeColor][i]-colors[oldFadeColor][i])) >> 8;
+		if (totalDeltaBrightness)
+		{
+			FadeDim_Cnt[i]=GLOBAL_settings_ptr->FadingTime*callsinsecond/totalDeltaBrightness;
+		}
+		else
+		{
+			FadeDim_Cnt[i]=1;
+		}
 
-		FadeDim_Cnt[i]=FadeDim_Cnt_Reload[i];		//reload count down
+		if (deltaBrightness > 0)
+		{
+			dimStep = 1;
+		}
+		else if (deltaBrightness < 0)
+		{
+			dimStep = -1;
+		}
+		else
+		{
+			dimStep = 0;
+		}
+
+		int targetBrightness = Brightness[i] + dimStep;
+		int dimsteps = abs(targetBrightness * targetBrightness - Brightness[i] * Brightness[i]);
+
 		if (dimsteps)								//avoid div zero if nothing is to do
 		{
-			PWM_SetupDim(i, dimsteps, FadeDimStep[i], FadeDim_Cnt_Reload[i]*cases/dimsteps);	//setup brightness
+			PWM_SetupDim(i, dimsteps, dimStep, FadeDim_Cnt[i]*cases/dimsteps);	//setup brightness
 		}
 	}
+	return deltaBrightness;
 }
 
