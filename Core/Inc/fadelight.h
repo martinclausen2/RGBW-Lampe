@@ -11,6 +11,7 @@
 #include "setbrightness.h"
 #include "settings.h"
 
+void Init_FadeLight();
 void FadeLight();
 void ResetFadeLight();
 

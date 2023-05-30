@@ -20,6 +20,8 @@
 #define callsinsecond timerfrequency/timerprescaler/timerreload/cases
 #define callsinminute callsinsecond*secondsinminute
 
+#define alarmtimeout 15
+
 #define AlarmBrightnessStep 1
 
 //check if any alarm is set to be executed NOW

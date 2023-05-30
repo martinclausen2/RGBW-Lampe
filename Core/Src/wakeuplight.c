@@ -14,6 +14,7 @@ unsigned int AlarmDim_Cnt_Reload[maxChannel] = {0,0,0,0};
 bool AlarmFlag = false;
 
 unsigned int Minutes2Signal = 0;
+unsigned int Minutes2TimeOut = 0;
 
 void CheckAlarm()
 {
@@ -61,6 +62,16 @@ void CheckAlarm()
 	else if (1 == Minutes2Signal)
 	{
 		StartAcousticDDSAlarm();
+		Minutes2TimeOut = alarmtimeout*callsinminute;
+	}
+	else if (1 < Minutes2TimeOut)
+	{
+		--Minutes2TimeOut;
+	}
+	else if (1 == Minutes2TimeOut)
+	{
+		AlarmEnd();
+		Minutes2TimeOut = 0;
 	}
 }
 

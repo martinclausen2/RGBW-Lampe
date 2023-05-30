@@ -433,7 +433,6 @@ uint8_t FadeLightCmd()
 	uint32_t time = 0;
 	uint32_t status = 0;
 	uint32_t brightness = 0;
-	uint32_t maxBrightness = 0;
 
 	// optional arguments
 	if (CLI_GetArgDecByFlag("-t", &time))
