@@ -66,7 +66,6 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
-int irCounter;
 bool volatile TimerFlag;
 /* USER CODE END PV */
 
@@ -169,9 +168,11 @@ int main(void)
 	Encoder_Init(&htim4);
 	Init_ExtBrightness(&hadc);
 	Init_FadeLight();
+	RC5_Init(&htim6, &htim10);
 
 	/*##-1- Start the TIM Base generation in interrupt mode ####################*/
-	HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
+	pTIM_CallbackTypeDef pMainTimerCallback = *MainTimerCallback;
+	HAL_TIM_RegisterCallback(&htim11, HAL_TIM_PERIOD_ELAPSED_CB_ID, pMainTimerCallback);
 	HAL_TIM_Base_Start_IT(&htim11); //main control loop
 
 	//Start ESP32 reset pin is inverted
@@ -1039,21 +1040,10 @@ static void MX_GPIO_Init(void)
  * @param  htim: TIM handle
  * @retval None
  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void MainTimerCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim->Instance == htim6.Instance)
-	{
-		RC5SignalSampling(HAL_GPIO_ReadPin(IR_IN_GPIO_Port, IR_IN_Pin));
-	}
-	else if (htim->Instance == htim10.Instance)
-	{
-		irCounter++;
-	}
-	else if (htim->Instance == htim11.Instance)
-	{
-		//set flag, should be set at a frequency of 100Hz
-		TimerFlag = true;
-	}
+	//set flag, should be set at a frequency of 100Hz
+	TimerFlag = true;
 }
 
 /* USER CODE END 4 */

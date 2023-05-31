@@ -43,10 +43,6 @@
 
 extern unsigned char SenderMode;		//Mode for sending commands to other devices
 
-extern int irCounter;
-
-extern TIM_HandleTypeDef htim10;
-
 //State Machine zur Decodierung des RC5-Fernbedieungscodes
 static const unsigned char tblRemote[] =	{
 		1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0,
@@ -58,6 +54,9 @@ static const unsigned char tblRemote[] =	{
 		39, 40, 0, 40, 0, 41, 0, 42, 35, 34, 35, 44,
 		0, 45, 48, 46, 48, 47, 48, 0, 49, 0, 50, 0, 34, 43};
 
+void RC5_Init(TIM_HandleTypeDef *handle_tim_decode, TIM_HandleTypeDef *handle_tim_encode);
+void RC5_decode(TIM_HandleTypeDef *htim);
+void RC5_encode(TIM_HandleTypeDef *htim);
 void RC5SignalSampling(GPIO_PinState signal);
 void SetLightRemote(unsigned char i, signed char steps);
 void SetBrightnessRemote(unsigned char i);

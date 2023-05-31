@@ -4,14 +4,48 @@
 
 #include "RC5.h"
 
+TIM_HandleTypeDef *htim_decode;		//handle to address timer
+TIM_HandleTypeDef *htim_encode;		//handle to address timer
+
 volatile unsigned char rCommand;   	//Bitte erhalten! Wenn Befehl fertig: auswerten
 volatile unsigned char rAddress;   	//Bitte erhalten! Wenn Befehl fertig: auswerten
 volatile unsigned char rCounter;  	//Bitte erhalten!
 
 volatile bool RTbit;				//Togglebit von RC5
+volatile int irCounter;
 
 unsigned char SenderMode;			//Mode for sending commands to other devices
+
 TIM_OC_InitTypeDef sConfigOC = {0};
+
+void RC5_Init(TIM_HandleTypeDef *handle_tim_decode, TIM_HandleTypeDef *handle_tim_encode)
+{
+
+	htim_decode = handle_tim_decode;
+	pTIM_CallbackTypeDef pDecodeCallback = *RC5_decode;
+	HAL_TIM_RegisterCallback(htim_decode, HAL_TIM_PERIOD_ELAPSED_CB_ID, pDecodeCallback);
+	HAL_TIM_Base_Start_IT(htim_decode);
+
+	htim_encode = handle_tim_encode;
+
+	sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	sConfigOC.Pulse = handle_tim_encode->Instance->CCR1;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+
+	pTIM_CallbackTypeDef pEncodeCallback = *RC5_encode;
+	HAL_TIM_RegisterCallback(htim_encode, HAL_TIM_PERIOD_ELAPSED_CB_ID, pEncodeCallback);
+}
+
+void RC5_decode(TIM_HandleTypeDef *htim)
+{
+	RC5SignalSampling(HAL_GPIO_ReadPin(IR_IN_GPIO_Port, IR_IN_Pin));
+}
+
+void RC5_encode(TIM_HandleTypeDef *htim)
+{
+	irCounter++;
+}
 
 void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 {
@@ -184,6 +218,12 @@ void DecodeRemote()
 // RC5 Sender
 // due to the resolution of the delay we send a bit longer pulses
 
+void SetOutput(uint32_t OCMode)
+{
+    sConfigOC.OCMode = OCMode;
+	HAL_TIM_PWM_ConfigChannel(htim_encode, &sConfigOC, TIM_CHANNEL_1);
+}
+
 void Delay()
 {
 	irCounter = 0;
@@ -194,12 +234,10 @@ void Delay()
 void SendBit0()
 {
  	//890us Impuls mit 36kHz senden
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	SetOutput(TIM_OCMODE_PWM1);
 	Delay();
 	//890us Pause
-    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	SetOutput(TIM_OCMODE_FORCED_INACTIVE);
 	Delay();
 }
 
@@ -207,12 +245,10 @@ void SendBit0()
 void SendBit1()
 {
 	//890us Pause
-    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	SetOutput(TIM_OCMODE_FORCED_INACTIVE);
 	Delay();
 	//890us Impuls mit 36kHz senden
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	SetOutput(TIM_OCMODE_PWM1);
 	Delay();
 }
 
@@ -222,15 +258,9 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 	unsigned char mask;
 	unsigned char i;
 
-    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
-	sConfigOC.Pulse = 111;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
-
 	//disable RC5 decoder for the moment
-	HAL_NVIC_DisableIRQ(TIM6_IRQn);
-	HAL_TIM_Base_Start_IT(&htim10);
+	HAL_TIM_Base_Stop_IT(htim_decode);
+	HAL_TIM_Base_Start_IT(htim_encode);
 
 	SendBit1();	//1st Startbit=1
 	SendBit1();	//2nd Startbit=1
@@ -276,12 +306,9 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 		}
 
 	//switch off IR-LED anyway, just to be sure
-    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
-	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
-	HAL_TIM_Base_Stop_IT(&htim10);
-
-	//irq on again
-	HAL_NVIC_EnableIRQ(TIM6_IRQn);
+	SetOutput(TIM_OCMODE_FORCED_INACTIVE);
+	HAL_TIM_Base_Stop_IT(htim_encode);
+	HAL_TIM_Base_Start_IT(htim_decode);
 }
 
 
