@@ -60,6 +60,7 @@ extern ADC_HandleTypeDef hadc;
 extern DMA_HandleTypeDef hdma_dac_ch1;
 extern RTC_HandleTypeDef hrtc;
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
@@ -260,6 +261,20 @@ void ADC1_IRQHandler(void)
   /* USER CODE BEGIN ADC1_IRQn 1 */
 
   /* USER CODE END ADC1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM10 global interrupt.
+  */
+void TIM10_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM10_IRQn 0 */
+
+  /* USER CODE END TIM10_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim10);
+  /* USER CODE BEGIN TIM10_IRQn 1 */
+
+  /* USER CODE END TIM10_IRQn 1 */
 }
 
 /**

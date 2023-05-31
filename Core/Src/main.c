@@ -66,6 +66,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
+int irCounter;
 bool volatile TimerFlag;
 /* USER CODE END PV */
 
@@ -81,13 +82,13 @@ static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM9_Init(void);
-static void MX_TIM10_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM11_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_CRC_Init(void);
 static void MX_TIM7_Init(void);
+static void MX_TIM10_Init(void);
 /* USER CODE BEGIN PFP */
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 /* USER CODE END PFP */
@@ -133,13 +134,13 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
-  MX_TIM10_Init();
   MX_USART1_UART_Init();
   MX_RTC_Init();
   MX_TIM11_Init();
   MX_TIM6_Init();
   MX_CRC_Init();
   MX_TIM7_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
   	// DMA: UART, DAC
   	// ADC: external brightness
@@ -159,7 +160,6 @@ int main(void)
 
 	//load RAM values from EEPROM
 	SettingsInit(&hcrc);
-	SenderMode = GLOBAL_settings_ptr->SenderMode;
 
 	Init_Terminal(&huart1);
 	SettingsCommands_Init();
@@ -842,7 +842,6 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM10_Init 1 */
@@ -854,24 +853,15 @@ static void MX_TIM10_Init(void)
   htim10.Init.Period = 444;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  if (HAL_TIM_OC_Init(&htim10) != HAL_OK)
   {
     Error_Handler();
   }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim10, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim10) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 222;
+  sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+  sConfigOC.Pulse = 111;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_OC_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -1054,6 +1044,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == htim6.Instance)
 	{
 		RC5SignalSampling(HAL_GPIO_ReadPin(IR_IN_GPIO_Port, IR_IN_Pin));
+	}
+	else if (htim->Instance == htim10.Instance)
+	{
+		irCounter++;
 	}
 	else if (htim->Instance == htim11.Instance)
 	{

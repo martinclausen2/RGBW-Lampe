@@ -43,7 +43,9 @@
 
 extern unsigned char SenderMode;		//Mode for sending commands to other devices
 
-extern TIM_HandleTypeDef htim9;
+extern int irCounter;
+
+extern TIM_HandleTypeDef htim10;
 
 //State Machine zur Decodierung des RC5-Fernbedieungscodes
 static const unsigned char tblRemote[] =	{

@@ -11,6 +11,7 @@ volatile unsigned char rCounter;  	//Bitte erhalten!
 volatile bool RTbit;				//Togglebit von RC5
 
 unsigned char SenderMode;			//Mode for sending commands to other devices
+TIM_OC_InitTypeDef sConfigOC = {0};
 
 void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 {
@@ -183,26 +184,36 @@ void DecodeRemote()
 // RC5 Sender
 // due to the resolution of the delay we send a bit longer pulses
 
+void Delay()
+{
+	irCounter = 0;
+	while(irCounter<32);
+}
+
 //send zero
 void SendBit0()
 {
  	//890us Impuls mit 36kHz senden
-	HAL_TIM_Base_Start(&htim9);
-	HAL_Delay(1);
-	HAL_TIM_Base_Stop(&htim9);
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	Delay();
 	//890us Pause
-	HAL_Delay(1);
+    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	Delay();
 }
 
 //Send one
 void SendBit1()
 {
 	//890us Pause
-	HAL_Delay(1);
- 	//890us Impuls mit 36kHz senden
-	HAL_TIM_Base_Start(&htim9);
-	HAL_Delay(1);
-	HAL_TIM_Base_Stop(&htim9);
+    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	Delay();
+	//890us Impuls mit 36kHz senden
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	Delay();
 }
 
 //Sends RC5 code
@@ -211,15 +222,15 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 	unsigned char mask;
 	unsigned char i;
 
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	GPIO_InitStruct.Pin = IR_OUT_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	HAL_GPIO_Init(IR_OUT_GPIO_Port, &GPIO_InitStruct);
+    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	sConfigOC.Pulse = 111;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
 
 	//disable RC5 decoder for the moment
 	HAL_NVIC_DisableIRQ(TIM6_IRQn);
+	HAL_TIM_Base_Start_IT(&htim10);
 
 	SendBit1();	//1st Startbit=1
 	SendBit1();	//2nd Startbit=1
@@ -264,13 +275,13 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
      		mask>>=1;
 		}
 
+	//switch off IR-LED anyway, just to be sure
+    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1);
+	HAL_TIM_Base_Stop_IT(&htim10);
+
 	//irq on again
 	HAL_NVIC_EnableIRQ(TIM6_IRQn);
-
-	//switch off IR-LED anyway, just to be sure
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	HAL_GPIO_Init(IR_OUT_GPIO_Port, &GPIO_InitStruct);
-	HAL_GPIO_WritePin(IR_OUT_GPIO_Port, IR_OUT_Pin, GPIO_PIN_RESET);
 }
 
 

@@ -4,7 +4,7 @@ void SettingsCommands_Init()
 {
 	CLI_AddCmd("bright", BrightnessCmd, 1, TMC_None, "set brightness values - [type] <-c channel_no> <-b brightness_value>");
 	CLI_AddCmd("getextbright", GetExtBrightCmd, 0, TMC_PrintStartTime | TMC_PrintStopTime, "getextbright");
-	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-a address> <-r receiver mode> <-s sender mode>");
+	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-a address> <-rm receiver mode> <-sm sender mode> <-s send command>");
 	CLI_AddCmd("time", SetTimeCmd, 3, TMC_None, "set time of RTC - [hour] [minute] [second]");
 	CLI_AddCmd("date", SetDateCmd, 4, TMC_None, "set date of RTC - [2 digit year] [month] [day] [w] with w weekday");
 	CLI_AddCmd("timestamp", GetTimestampCmd, 0, TMC_None, "get date and time from RTC");
@@ -147,19 +147,24 @@ uint8_t RemoteControlCmd()
 	uint32_t address = 0;
 	uint32_t receiverMode = 0;
 	uint32_t senderMode = 0;
+	uint32_t send = 0;
 
 	// optional arguments
 	if (CLI_GetArgDecByFlag("-a", &address) & (address <= maxRC5Addr))
 	{
 		GLOBAL_settings_ptr->RC5Addr = (uint8_t)address;
 	}
-	if (CLI_GetArgDecByFlag("-r", &receiverMode) & (receiverMode <= maxComMode))
+	if (CLI_GetArgDecByFlag("-rm", &receiverMode) & (receiverMode <= maxComMode))
 	{
 		GLOBAL_settings_ptr->ReceiverMode = (uint8_t)receiverMode;
 	}
-	if (CLI_GetArgDecByFlag("-s", &senderMode) & (senderMode <= maxComMode))
+	if (CLI_GetArgDecByFlag("-sm", &senderMode) & (senderMode <= maxComMode))
 	{
 		GLOBAL_settings_ptr->SenderMode = (uint8_t)senderMode;
+	}
+	if (CLI_GetArgDecByFlag("-s", &send))
+	{
+		SendRC5(RC5Addr_com, send, 1, ComModeOff, RC5Cmd_Repeats);
 	}
 
 	CLI_Printf("\r\nRC5 address: %d\r\nreceiver mode: %d %s\r\nsender mode: %d %s",
