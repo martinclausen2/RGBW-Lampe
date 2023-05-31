@@ -141,6 +141,22 @@ int main(void)
   MX_CRC_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+  	// DMA: UART, DAC
+  	// ADC: external brightness
+    // DAC: acoustic alarm signal generation
+    // I2C1: acceleration sensor (planned)
+    // SPI2: display (planned)
+  	// TIM2: LED PWM
+  	// TIM3: status LED PWM
+    // TIM4: rotational encoder
+	// TIM6: RC5 decoder timing
+	// TIM7: acoustic alarm signal generation
+    // TIM9: alternative RC5 decoder (planned)
+    // TIM10: RC5 sender
+    // TIM11: main control loop
+    // USART1: terminal
+    // CRC: EEPROM change check
+
 	//load RAM values from EEPROM
 	SettingsInit(&hcrc);
 	SenderMode = GLOBAL_settings_ptr->SenderMode;
@@ -153,8 +169,6 @@ int main(void)
 	Encoder_Init(&htim4);
 	Init_ExtBrightness(&hadc);
 	Init_FadeLight();
-
-	//planned tim9 => alternative RC5 decoder, tim10 => RC5 sender, spi2 => LCD, i2c => acceleration sensor
 
 	/*##-1- Start the TIM Base generation in interrupt mode ####################*/
 	HAL_TIM_Base_Start_IT(&htim6);  //RC5 decoder
@@ -828,6 +842,7 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM10_Init 1 */
@@ -836,15 +851,24 @@ static void MX_TIM10_Init(void)
   htim10.Instance = TIM10;
   htim10.Init.Prescaler = 0;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 65535;
+  htim10.Init.Period = 444;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim10, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim10) != HAL_OK)
   {
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 222;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)

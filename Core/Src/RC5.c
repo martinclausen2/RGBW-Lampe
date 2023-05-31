@@ -140,13 +140,9 @@ void DecodeRemote()
 	  			}
 	  		RTbitold=RTbit;				//Togglebit speichern
 	  		}
-	  	else if (RC5Addr_front==rAddress)
+	  	else if ((RC5Addr_first>=rAddress) & ((RC5Addr_first + maxVirtualChannel -1) <= rAddress) & ( RC5Addr_com > rAddress))
 	  		{
-	  		SetBrightnessRemote(0);
-	  		}
-	  	else if (RC5Addr_back==rAddress)
-	  		{
-	  		SetBrightnessRemote(1);
+	  		SetBrightnessRemote(rAddress - RC5Addr_first);
 	  		}
 	  	else if (RC5Addr_com==rAddress)
 	  		{
@@ -155,13 +151,13 @@ void DecodeRemote()
 	  			case RC5Cmd_AlarmStart:
 	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
 	  					{
-	  					// TODO		Alarm();
+	  					alarmState.alarmTrigger = 1;
 	  					}
 	  				break;
 	  			case RC5Cmd_AlarmEnd:
 	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
 	  					{
-	  					// TODO		AlarmEnd();
+	  					AlarmEnd();
 	  					}
 	  				break;
 	  			case RC5Cmd_Off:
@@ -180,4 +176,117 @@ void DecodeRemote()
 	  		}
 		rCounter=0;					//Nach Erkennung zurücksetzen
 		}
+}
+
+
+
+// RC5 Sender
+// due to the resolution of the delay we send a bit longer pulses
+
+//send zero
+void SendBit0()
+{
+ 	//890us Impuls mit 36kHz senden
+	HAL_TIM_Base_Start(&htim9);
+	HAL_Delay(1);
+	HAL_TIM_Base_Stop(&htim9);
+	//890us Pause
+	HAL_Delay(1);
+}
+
+//Send one
+void SendBit1()
+{
+	//890us Pause
+	HAL_Delay(1);
+ 	//890us Impuls mit 36kHz senden
+	HAL_TIM_Base_Start(&htim9);
+	HAL_Delay(1);
+	HAL_TIM_Base_Stop(&htim9);
+}
+
+//Sends RC5 code
+void SendCommand(unsigned char address, unsigned char code, unsigned char toggle)
+{
+	unsigned char mask;
+	unsigned char i;
+
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Pin = IR_OUT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	HAL_GPIO_Init(IR_OUT_GPIO_Port, &GPIO_InitStruct);
+
+	//disable RC5 decoder for the moment
+	HAL_NVIC_DisableIRQ(TIM6_IRQn);
+
+	SendBit1();	//1st Startbit=1
+	SendBit1();	//2nd Startbit=1
+
+	//Togglebit
+	if(toggle==0)
+		{
+		SendBit0();
+    		}
+   	else
+    		{
+     		SendBit1();
+    		}
+
+	//5 Bit Address
+   	mask=0x10;	//Begin with MSB
+   	for(i=0; i<5; i++)
+    		{
+		if(address&mask)
+      			{
+       			SendBit1();
+      			}
+     		else
+      			{
+       			SendBit0();
+      			}
+		mask>>=1;	//Next bit
+    		}
+
+	//6 Bit Code
+   	mask=0x20;
+	for(i=0; i<6; i++)
+		{
+		if(code&mask)
+			{
+       			SendBit1();
+      			}
+     		else
+     	 		{
+       			SendBit0();
+      			}
+     		mask>>=1;
+		}
+
+	//irq on again
+	HAL_NVIC_EnableIRQ(TIM6_IRQn);
+
+	//switch off IR-LED anyway, just to be sure
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	HAL_GPIO_Init(IR_OUT_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_WritePin(IR_OUT_GPIO_Port, IR_OUT_Pin, GPIO_PIN_RESET);
+}
+
+
+//Sends RC5 code if required, including repeats
+void SendRC5(unsigned char address, unsigned char code, unsigned char toggle, unsigned char requiredmode, unsigned repeats)
+{
+	unsigned char j;
+	if (SenderMode>=requiredmode)
+		{
+		for(j=1; j<=repeats; j++)
+			{
+			SendCommand(address, code, toggle);
+			if (j<repeats)			//skip last pause in sequence of repeated commands
+				{
+				HAL_Delay(89);		//wait 88.9ms
+				}
+		   	}
+	   	}
 }

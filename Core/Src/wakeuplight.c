@@ -78,7 +78,7 @@ void CheckAlarm()
 //stop any brightness increase, count down to acoustic alarm, or acoustic alarm
 void AlarmEnd()
 {
-	//			SendRC5(RC5Addr_com, RC5Cmd_AlarmEnd, 1, ComModeOff, RC5Cmd_Repeats);
+	SendRC5(RC5Addr_com, RC5Cmd_AlarmEnd, 1, ComModeOff, RC5Cmd_Repeats);
 	AlarmFlag=0;
 	Minutes2Signal=0;
 	StopAcousticDDSAlarm();

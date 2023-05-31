@@ -94,7 +94,7 @@ void MainMenu()
 				}
 				else
 				{
-					//								SendRC5(RC5Addr_com, RC5Cmd_On, 1, ComModeAll, RC5Cmd_Repeats);
+					SendRC5(RC5Addr_com, RC5Cmd_On, 1, ComModeAll, RC5Cmd_Repeats);
 					SwAllLightOn();
 				}
 			}
@@ -104,7 +104,7 @@ void MainMenu()
 				ResetFadeLight();
 				if (LightOn)
 				{
-					//								SendRC5(RC5Addr_com, RC5Cmd_Off, 1, ComModeAll, RC5Cmd_Repeats);
+					SendRC5(RC5Addr_com, RC5Cmd_Off, 1, ComModeAll, RC5Cmd_Repeats);
 					SwAllLightOff();
 				}
 				else
@@ -113,7 +113,7 @@ void MainMenu()
 					{
 						SenderMode=ComModeAll;
 					}
-					//								SendRC5(RC5Addr_com, RC5Cmd_On, 1, ComModeAll, RC5Cmd_Repeats);
+					SendRC5(RC5Addr_com, RC5Cmd_On, 1, ComModeAll, RC5Cmd_Repeats);
 					SwAllLightOn();
 				}
 			}
@@ -138,7 +138,10 @@ void MainMenu()
 				EncoderSteps = 0;								//ack any steps
 				LEDSetupLimit();
 				WriteTimer=WriteTime;
-				//							SendRC5(RC5Addr_front+FocusBacklight, (Brightness[FocusBacklight]>>2) & 0x3F, (Brightness[FocusBacklight]>>1) & 0x01, ComModeAll, RC5Value_Repeats);
+			  	if ((RC5Addr_first + FocusChannel) < RC5Addr_com)
+			  	{
+			  		SendRC5(RC5Addr_first+FocusChannel, (Brightness[FocusChannel]>>2) & 0x3F, (Brightness[FocusChannel]>>1) & 0x01, ComModeAll, RC5Value_Repeats);
+			  	}
 			}
 		}
 		actionCounter=0xFF;	//last time slot, do reset counter with increment to 0

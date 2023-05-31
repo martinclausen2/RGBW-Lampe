@@ -12,6 +12,7 @@
 #include "serialLogger.h"
 #include "setbrightness.h"
 #include "settings.h"
+#include "main.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -25,8 +26,7 @@
 #define ComModeConditional	2
 #define ComModeAll	3
 
-#define RC5Addr_front		27	//address for front light brightness
-#define RC5Addr_back		28	//address for back light brightness, MUST follow front address!
+#define RC5Addr_first		27	//address for first light brightness
 #define RC5Addr_com			29	//address for RC5 communication
 #define maxRC5Address		31	//maximum possible RC5 address
 
@@ -42,6 +42,8 @@
 #define Brightness_steps	20	//number of steps used to execute a brightness change
 
 extern unsigned char SenderMode;		//Mode for sending commands to other devices
+
+extern TIM_HandleTypeDef htim9;
 
 //State Machine zur Decodierung des RC5-Fernbedieungscodes
 static const unsigned char tblRemote[] =	{
@@ -59,5 +61,9 @@ void SetLightRemote(unsigned char i, signed char steps);
 void SetBrightnessRemote(unsigned char i);
 void SetBrightnessLevelRemote();
 void DecodeRemote();
+void SendRC5(unsigned char address, unsigned char code, unsigned char toggle, unsigned char requiredmode, unsigned repeats);
+void SendCommand(unsigned char address, unsigned char code, unsigned char toggle);
+void SendBit0();
+void SendBit1();
 
 #endif /* RC5_H_ */
