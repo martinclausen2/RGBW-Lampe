@@ -16,8 +16,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-
-#define MainloopFrequ       10	//40Hz durch 4 Schritte
+#define pulsesActive 26
+#define pulsesInactive 23
 
 #define maxComMode 3
 

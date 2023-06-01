@@ -487,6 +487,20 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
 
   /* USER CODE END TIM3_MspInit 1 */
   }
+  else if(htim_pwm->Instance==TIM10)
+  {
+  /* USER CODE BEGIN TIM10_MspInit 0 */
+
+  /* USER CODE END TIM10_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM10_CLK_ENABLE();
+    /* TIM10 interrupt Init */
+    HAL_NVIC_SetPriority(TIM10_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM10_IRQn);
+  /* USER CODE BEGIN TIM10_MspInit 1 */
+
+  /* USER CODE END TIM10_MspInit 1 */
+  }
 
 }
 
@@ -600,31 +614,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
 }
 
-/**
-* @brief TIM_OC MSP Initialization
-* This function configures the hardware resources used in this example
-* @param htim_oc: TIM_OC handle pointer
-* @retval None
-*/
-void HAL_TIM_OC_MspInit(TIM_HandleTypeDef* htim_oc)
-{
-  if(htim_oc->Instance==TIM10)
-  {
-  /* USER CODE BEGIN TIM10_MspInit 0 */
-
-  /* USER CODE END TIM10_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM10_CLK_ENABLE();
-    /* TIM10 interrupt Init */
-    HAL_NVIC_SetPriority(TIM10_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM10_IRQn);
-  /* USER CODE BEGIN TIM10_MspInit 1 */
-
-  /* USER CODE END TIM10_MspInit 1 */
-  }
-
-}
-
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -703,7 +692,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
     */
     GPIO_InitStruct.Pin = IR_OUT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF3_TIM10;
     HAL_GPIO_Init(IR_OUT_GPIO_Port, &GPIO_InitStruct);
@@ -743,6 +732,20 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
   /* USER CODE BEGIN TIM3_MspDeInit 1 */
 
   /* USER CODE END TIM3_MspDeInit 1 */
+  }
+  else if(htim_pwm->Instance==TIM10)
+  {
+  /* USER CODE BEGIN TIM10_MspDeInit 0 */
+
+  /* USER CODE END TIM10_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM10_CLK_DISABLE();
+
+    /* TIM10 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(TIM10_IRQn);
+  /* USER CODE BEGIN TIM10_MspDeInit 1 */
+
+  /* USER CODE END TIM10_MspDeInit 1 */
   }
 
 }
@@ -839,31 +842,6 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
   /* USER CODE BEGIN TIM11_MspDeInit 1 */
 
   /* USER CODE END TIM11_MspDeInit 1 */
-  }
-
-}
-
-/**
-* @brief TIM_OC MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param htim_oc: TIM_OC handle pointer
-* @retval None
-*/
-void HAL_TIM_OC_MspDeInit(TIM_HandleTypeDef* htim_oc)
-{
-  if(htim_oc->Instance==TIM10)
-  {
-  /* USER CODE BEGIN TIM10_MspDeInit 0 */
-
-  /* USER CODE END TIM10_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM10_CLK_DISABLE();
-
-    /* TIM10 interrupt DeInit */
-    HAL_NVIC_DisableIRQ(TIM10_IRQn);
-  /* USER CODE BEGIN TIM10_MspDeInit 1 */
-
-  /* USER CODE END TIM10_MspDeInit 1 */
   }
 
 }
