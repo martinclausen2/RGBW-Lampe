@@ -52,31 +52,34 @@ void CheckAlarm()
 		{
 			Alarm_StepDim(i);
 		}
-	}
 
-	//count down to start acoustic signal
-	if (1 < Minutes2Signal)
-	{
-		--Minutes2Signal;
-	}
-	else if (1 == Minutes2Signal)
-	{
-		StartAcousticDDSAlarm();
-		Minutes2TimeOut = alarmtimeout*callsinminute;
-		Minutes2Signal = 0;
-	}
-	else if ((alarmtimeout*callsinminute/2) == Minutes2TimeOut)
-	{
-		SetVolumeAcousticDDSAlarm(GPIO_PIN_SET);
-	}
-	else if (1 < Minutes2TimeOut)
-	{
-		--Minutes2TimeOut;
-	}
-	else if (1 == Minutes2TimeOut)
-	{
-		AlarmEnd();
-		Minutes2TimeOut = 0;
+		//count down to start acoustic signal
+		if (1 < Minutes2Signal)
+		{
+			--Minutes2Signal;
+		}
+		else if (1 == Minutes2Signal)
+		{
+			StartAcousticDDSAlarm();
+			Minutes2TimeOut = alarmtimeout*callsinminute;
+			Minutes2Signal = 0;
+		}
+
+		//count down to increase volume and finally to stop signal
+		if (1 < Minutes2TimeOut)
+		{
+			--Minutes2TimeOut;
+		}
+		else if (1 == Minutes2TimeOut)
+		{
+			AlarmEnd();
+			Minutes2TimeOut = 0;
+		}
+
+		if ((alarmtimeout*callsinminute/2) == Minutes2TimeOut)
+		{
+			SetVolumeAcousticDDSAlarm(GPIO_PIN_SET);
+		}
 	}
 }
 
@@ -85,7 +88,8 @@ void AlarmEnd()
 {
 	SendRC5(RC5Addr_com, RC5Cmd_AlarmEnd, 1, ComModeOff, RC5Cmd_Repeats);
 	AlarmFlag=0;
-	Minutes2Signal=0;
+	Minutes2Signal = 0;
+	Minutes2TimeOut = 0;
 	StopAcousticDDSAlarm();
 	LEDOn();
 }
@@ -94,7 +98,7 @@ void AlarmSnooze()
 {
 	if (AcousticAlarmFlag)
 	{
-		Minutes2Signal=GetTime2Singal();
+		Minutes2Signal=callsinminute*((unsigned int)GLOBAL_settings_ptr->AlarmTimeSnooze);
 		StopAcousticDDSAlarm();
 	}
 }
