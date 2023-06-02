@@ -63,6 +63,11 @@ void CheckAlarm()
 	{
 		StartAcousticDDSAlarm();
 		Minutes2TimeOut = alarmtimeout*callsinminute;
+		Minutes2Signal = 0;
+	}
+	else if ((alarmtimeout*callsinminute/2) == Minutes2TimeOut)
+	{
+		SetVolumeAcousticDDSAlarm(GPIO_PIN_SET);
 	}
 	else if (1 < Minutes2TimeOut)
 	{

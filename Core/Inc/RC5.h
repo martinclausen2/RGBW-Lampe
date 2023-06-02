@@ -16,8 +16,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define pulsesActive 26
-#define pulsesInactive 23
+#define pulsesActive 31
+#define pulsesInactive 31
 
 #define maxComMode 3
 

@@ -5,9 +5,9 @@
  *      Author: Martin
  */
 
-#include "stm32l1xx_hal.h"
+#include "acousticddsalarm.h"
 
-static uint16_t sinetable [] =
+static const uint16_t __attribute__((unused)) sinetable [dacCacheSize] =
 {
 32513	,
 33314	,

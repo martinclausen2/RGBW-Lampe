@@ -22,6 +22,10 @@
 
 #define alarmtimeout 15
 
+#define maxSnooze 30
+
+#define maxTime2Signal 100
+
 #define AlarmBrightnessStep 1
 
 //check if any alarm is set to be executed NOW

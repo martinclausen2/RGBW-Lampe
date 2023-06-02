@@ -34,7 +34,7 @@ void RC5_Init(TIM_HandleTypeDef *handle_tim_decode, TIM_HandleTypeDef *handle_ti
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
 	pTIM_CallbackTypeDef pEncodeCallback = *RC5_encode;
-	HAL_TIM_RegisterCallback(htim_encode, HAL_TIM_PERIOD_ELAPSED_CB_ID, pEncodeCallback);
+	HAL_TIM_RegisterCallback(htim_encode, HAL_TIM_PWM_PULSE_FINISHED_CB_ID, pEncodeCallback);
 }
 
 void RC5_decode(TIM_HandleTypeDef *htim)
@@ -217,12 +217,13 @@ void DecodeRemote()
 
 // RC5 Sender
 
+// output and timer configuration required to keep IRQ all time and PWM output at the time needed
+
 void SetOutputActive()
 {
  	//890us Impuls mit 36kHz senden
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	HAL_TIM_PWM_ConfigChannel(htim_encode, &sConfigOC, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim_encode, TIM_CHANNEL_1);
 	irCounter = 0;
 	while(irCounter<pulsesActive);
 }
@@ -232,7 +233,6 @@ void SetOutputInactive()
 	//890us Pause
     sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
 	HAL_TIM_PWM_ConfigChannel(htim_encode, &sConfigOC, TIM_CHANNEL_1);
-	HAL_TIM_Base_Start_IT(htim_encode);
 	irCounter = 0;
 	while(irCounter<pulsesInactive);
 }
@@ -259,6 +259,7 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 
 	//disable RC5 decoder for the moment
 	HAL_TIM_Base_Stop_IT(htim_decode);
+	HAL_TIM_PWM_Start_IT(htim_encode, TIM_CHANNEL_1);
 
 	SendBit1();	//1st Startbit=1
 	SendBit1();	//2nd Startbit=1
@@ -305,7 +306,7 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 
 	//switch off IR-LED anyway, just to be sure
 	SetOutputInactive();
-	HAL_TIM_Base_Stop_IT(htim_encode);
+	HAL_TIM_PWM_Stop_IT(htim_encode, TIM_CHANNEL_1);
 	HAL_TIM_Base_Start_IT(htim_decode);
 }
 
