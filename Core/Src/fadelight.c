@@ -9,7 +9,7 @@
 
 #define colorCount 11
 
-unsigned int FadeDim_Cnt[maxChannel] = {0,0,0,0};
+unsigned int FadeDim_Cnt[maxChannel] = {0};
 
 unsigned int fadeColor = colorCount;
 unsigned int oldFadeColor = colorCount-1;

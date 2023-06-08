@@ -7,8 +7,8 @@
 
 #include "wakeuplight.h"
 
-unsigned int AlarmDim_Cnt[maxChannel] = {0,0,0,0};
-unsigned int AlarmDim_Cnt_Reload[maxChannel] = {0,0,0,0};
+unsigned int AlarmDim_Cnt[maxChannel] = {0};
+unsigned int AlarmDim_Cnt_Reload[maxChannel] = {0};
 
 //stays on as long as the light fades in
 bool AlarmFlag = false;
