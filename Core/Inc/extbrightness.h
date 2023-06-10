@@ -38,9 +38,6 @@ typedef union {
 
 extern unsigned long extBrightness;
 
-/**amplification factors of photoamp */
-extern const unsigned int photoampfactor[];
-
 void Init_ExtBrightness(ADC_HandleTypeDef *handle_adc);
 void Sample_ExtBrightness();
 void AddValue_ExtBrightness(ADC_HandleTypeDef* handle_adc);
