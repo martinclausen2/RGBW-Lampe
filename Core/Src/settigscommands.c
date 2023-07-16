@@ -4,7 +4,7 @@ void SettingsCommands_Init()
 {
 	CLI_AddCmd("bright", BrightnessCmd, 1, TMC_None, "set brightness values - [type] <-c channel_no> <-b brightness_value>");
 	CLI_AddCmd("getextbright", GetExtBrightCmd, 0, TMC_PrintStartTime | TMC_PrintStopTime, "getextbright");
-	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-sa address> <-sd data> <-rm receiver mode> <-sm sender mode> <-s send command>");
+	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-a address> <-rm receiver mode> <-sm sender mode> <-sa send address> <-sd send data>");
 	CLI_AddCmd("time", SetTimeCmd, 3, TMC_None, "set time of RTC - [hour] [minute] [second]");
 	CLI_AddCmd("date", SetDateCmd, 4, TMC_None, "set date of RTC - [2 digit year] [month] [day] [w] with w weekday");
 	CLI_AddCmd("timestamp", GetTimestampCmd, 0, TMC_None, "get date and time from RTC");
