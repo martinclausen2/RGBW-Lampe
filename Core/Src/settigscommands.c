@@ -4,7 +4,7 @@ void SettingsCommands_Init()
 {
 	CLI_AddCmd("bright", BrightnessCmd, 1, TMC_None, "set brightness values - [type] <-c channel_no> <-b brightness_value>");
 	CLI_AddCmd("getextbright", GetExtBrightCmd, 0, TMC_PrintStartTime | TMC_PrintStopTime, "getextbright");
-	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-a address> <-rm receiver mode> <-sm sender mode> <-s send command>");
+	CLI_AddCmd("remote", RemoteControlCmd, 0, TMC_None, "set infrared remote parameters - <-sa address> <-sd data> <-rm receiver mode> <-sm sender mode> <-s send command>");
 	CLI_AddCmd("time", SetTimeCmd, 3, TMC_None, "set time of RTC - [hour] [minute] [second]");
 	CLI_AddCmd("date", SetDateCmd, 4, TMC_None, "set date of RTC - [2 digit year] [month] [day] [w] with w weekday");
 	CLI_AddCmd("timestamp", GetTimestampCmd, 0, TMC_None, "get date and time from RTC");
@@ -16,6 +16,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("reset", ResetSettingsCmd, 0, TMC_None, "reset settings to factory defaults");
 	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
 	CLI_AddCmd("fadelight", FadeLightCmd, 0, TMC_None, "mood light - <-f 1 | 0> time - <-t time> <-b brightness> <-mb maximum brightness>");
+	CLI_AddCmd("debug", DebugCmd, 0, TMC_None, "dummy command to absorb debug messages from host");
 }
 
 void printValueArray(unsigned char(*values)[])
@@ -147,7 +148,8 @@ uint8_t RemoteControlCmd()
 	uint32_t address = 0;
 	uint32_t receiverMode = 0;
 	uint32_t senderMode = 0;
-	uint32_t send = 0;
+	uint32_t sendData = 0;
+	uint32_t sendAddress = 0;
 
 	// optional arguments
 	if (CLI_GetArgDecByFlag("-a", &address) & (address <= maxRC5Addr))
@@ -162,12 +164,12 @@ uint8_t RemoteControlCmd()
 	{
 		GLOBAL_settings_ptr->SenderMode = (uint8_t)senderMode;
 	}
-	if (CLI_GetArgDecByFlag("-s", &send))
+	if (CLI_GetArgDecByFlag("-sa", &sendAddress) & CLI_GetArgDecByFlag("-sd", &sendData))
 	{
-		SendRC5(RC5Addr_com, send, 1, ComModeOff, RC5Cmd_Repeats);
+		SendRC5(sendAddress, sendData, 1, ComModeOff, RC5Cmd_Repeats);
 	}
 
-	CLI_Printf("\r\nRC5 address: %d\r\nreceiver mode: %d %s\r\nsender mode: %d %s",
+	CLI_Printf("\r\nRC5 receiver address: %d\r\nreceiver mode: %d %s\r\nsender mode: %d %s",
 			(int)GLOBAL_settings_ptr->RC5Addr,
 			(int)GLOBAL_settings_ptr->ReceiverMode,
 			ComModetext[GLOBAL_settings_ptr->ReceiverMode],
@@ -482,5 +484,10 @@ uint8_t FadeLightCmd()
 
 	SettingsWrite();
 
+	return TE_OK;
+}
+
+uint8_t DebugCmd()
+{
 	return TE_OK;
 }

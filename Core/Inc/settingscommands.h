@@ -27,5 +27,6 @@ uint8_t PowerCmd();
 uint8_t ResetSettingsCmd();
 uint8_t StatusLEDCmd();
 uint8_t FadeLightCmd();
+uint8_t DebugCmd();
 
 #endif // _SETTINGSCOMMANDS_H_

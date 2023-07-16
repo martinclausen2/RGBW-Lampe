@@ -56,37 +56,37 @@ void RC5SignalSampling(GPIO_PinState signal)		//int from Timer to read RC5 state
 	rc5state|=!signal;					//Insert inverted input
 	rc5state=tblRemote[rc5state];		//get next state
 	if (33==rc5state)					//Startsequenz erkannt?
-		{
+	{
 		rCounter=0;						//alles zurücksetzen
 		rAddress=0;
 		rCommand=0;
-		}
+	}
 	else if ((42==rc5state) || (50==rc5state))	 //Erkanntes Bit einorden
-		{
+	{
 		if (42==rc5state)			//Nutzbit 1 erkannt?
-			{
+		{
 			Rbit=1;
-			}
+		}
 		else if (50==rc5state)		//Nutzbit 0 erkannt?
-			{
+		{
 			Rbit=0;
-			}
-   			++rCounter;				//Da neues Bit ...
+		}
+		++rCounter;				//Da neues Bit ...
 		if (1==rCounter)
-			{
+		{
 			RTbit=Rbit;
-			}
+		}
 		else if (7>rCounter)		//Adressbit
-			{
+		{
 			rAddress=rAddress<<1;
 			rAddress|=Rbit;
-			}
-		else						//Commandbit
-			{
-  			rCommand=rCommand<<1;
-  			rCommand|=Rbit;
-  			}
 		}
+		else						//Commandbit
+		{
+			rCommand=rCommand<<1;
+			rCommand|=Rbit;
+		}
+	}
 }
 
 
@@ -103,19 +103,19 @@ void SetLightRemote(unsigned char i, signed char steps)
 void SetBrightnessRemote(unsigned char i)
 {
 	if (GLOBAL_settings_ptr->ReceiverMode>=ComModeConditional)
-		{
+	{
 		Brightness[i]=((rCommand<<1) & 0x7E) + RTbit;
 		SetLightRemote(i,0);
-		}
+	}
 }
 
 void SetBrightnessLevelRemote()
 {
 	if (rCommand<=9)
-		{
+	{
 		Brightness[FocusChannel]=(((unsigned int)(rCommand)*(unsigned int)GLOBAL_settings_ptr->maxBrightness[FocusChannel])/(9)) & 0xFF;
 		SetLightRemote(FocusChannel,0);
-		}
+	}
 }
 
 void DecodeRemote()
@@ -123,94 +123,94 @@ void DecodeRemote()
 	bool static RTbitold;				//Togglebit des letzten Befehls von RC5
 
 	if (12==rCounter)
-		{
+	{
 		char serial_Buffer[64];
 		sprintf(serial_Buffer,"RC5 Addr %d Cmd %d\r\n", rAddress, rCommand);
 		log_serial(serial_Buffer);
 
 		if (GLOBAL_settings_ptr->RC5Addr==rAddress)
-			{
+		{
 			if (RTbit ^ RTbitold)		//Neue Taste erkannt
-				{
+			{
 				switch (rCommand)
-					{
-					case 12:			//Standby
-						SwAllLightOn();
-						break;
-					case 13:			//mute
-						SwAllLightOff();
-						break;
-					default:
-						SetBrightnessLevelRemote();
-						break;
-	  				}
+				{
+				case 12:			//Standby
+					SwAllLightOn();
+					break;
+				case 13:			//mute
+					SwAllLightOff();
+					break;
+				default:
+					SetBrightnessLevelRemote();
+					break;
 				}
+			}
 
-	  		switch (rCommand)			//new or same key pressed
-	  			{
-	  			case 16:				//incr vol
-					SetLightRemote(0, RemoteSteps);
-					break;
-	  			case 17:				//decr vol
-					SetLightRemote(0, -RemoteSteps);
-					break;
-				case 32:				//incr channel
-					SetLightRemote(FocusChannel, RemoteSteps);
-					break;
-				case 33:				//decr channel
-					SetLightRemote(FocusChannel, -RemoteSteps);
-					break;
-				case 55:				//red
-					FocusChannel = 1;
-					break;
-				case 54:				//green
-					FocusChannel = 3;
-					break;
-				case 50:				//yellow => white
-					FocusChannel = 0;
-					break;
-				case 52:				//blue
-					FocusChannel = 2;
-					break;
-	  			}
-	  		RTbitold=RTbit;				//Togglebit speichern
-	  		}
-	  	else if ((RC5Addr_first>=rAddress) & ((RC5Addr_first + maxVirtualChannel -1) <= rAddress) & ( RC5Addr_com > rAddress))
-	  		{
-	  		SetBrightnessRemote(rAddress - RC5Addr_first);
-	  		}
-	  	else if (RC5Addr_com==rAddress)
-	  		{
-	  		switch (rCommand)
-	  			{
-	  			case RC5Cmd_AlarmStart:
-	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
-	  					{
-	  					alarmState.alarmTrigger = 1;
-	  					}
-	  				break;
-	  			case RC5Cmd_AlarmEnd:
-	  				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
-	  					{
-	  					AlarmEnd();
-	  					}
-	  				break;
-	  			case RC5Cmd_Off:
-					if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
-						{
-						SwAllLightOff();
-						}
-	  				break;
-	  			case RC5Cmd_On:
-					if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
-						{
-						SwAllLightOn();
-						}
-	  				break;
-	  			}
-	  		}
-		rCounter=0;					//Nach Erkennung zurücksetzen
+			switch (rCommand)			//new or same key pressed
+			{
+			case 16:				//incr vol
+				SetLightRemote(0, RemoteSteps);
+				break;
+			case 17:				//decr vol
+				SetLightRemote(0, -RemoteSteps);
+				break;
+			case 32:				//incr channel
+				SetLightRemote(FocusChannel, RemoteSteps);
+				break;
+			case 33:				//decr channel
+				SetLightRemote(FocusChannel, -RemoteSteps);
+				break;
+			case 55:				//red
+				FocusChannel = 1;
+				break;
+			case 54:				//green
+				FocusChannel = 3;
+				break;
+			case 50:				//yellow => white
+				FocusChannel = 0;
+				break;
+			case 52:				//blue
+				FocusChannel = 2;
+				break;
+			}
+			RTbitold=RTbit;				//Togglebit speichern
 		}
+		else if ((RC5Addr_first>=rAddress) & ((RC5Addr_first + maxVirtualChannel -1) <= rAddress) & ( RC5Addr_com > rAddress))
+		{
+			SetBrightnessRemote(rAddress - RC5Addr_first);
+		}
+		else if (RC5Addr_com==rAddress)
+		{
+			switch (rCommand)
+			{
+			case RC5Cmd_AlarmStart:
+				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
+				{
+					alarmState.alarmTrigger = 1;
+				}
+				break;
+			case RC5Cmd_AlarmEnd:
+				if (ComModeAlarm<=GLOBAL_settings_ptr->ReceiverMode)
+				{
+					AlarmEnd();
+				}
+				break;
+			case RC5Cmd_Off:
+				if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
+				{
+					SwAllLightOff();
+				}
+				break;
+			case RC5Cmd_On:
+				if (ComModeConditional<=GLOBAL_settings_ptr->ReceiverMode)
+				{
+					SwAllLightOn();
+				}
+				break;
+			}
+		}
+		rCounter=0;					//Nach Erkennung zurücksetzen
+	}
 }
 
 
@@ -221,8 +221,8 @@ void DecodeRemote()
 
 void SetOutputActive()
 {
- 	//890us Impuls mit 36kHz senden
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	//890us Impuls mit 36kHz senden
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	HAL_TIM_PWM_ConfigChannel(htim_encode, &sConfigOC, TIM_CHANNEL_1);
 	irCounter = 0;
 	while(irCounter<pulsesActive);
@@ -231,7 +231,7 @@ void SetOutputActive()
 void SetOutputInactive()
 {
 	//890us Pause
-    sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+	sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
 	HAL_TIM_PWM_ConfigChannel(htim_encode, &sConfigOC, TIM_CHANNEL_1);
 	irCounter = 0;
 	while(irCounter<pulsesInactive);
@@ -266,43 +266,43 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 
 	//Togglebit
 	if(toggle==0)
-		{
+	{
 		SendBit0();
-    		}
-   	else
-    		{
-     		SendBit1();
-    		}
+	}
+	else
+	{
+		SendBit1();
+	}
 
 	//5 Bit Address
-   	mask=0x10;	//Begin with MSB
-   	for(i=0; i<5; i++)
-    		{
+	mask=0x10;	//Begin with MSB
+	for(i=0; i<5; i++)
+	{
 		if(address&mask)
-      			{
-       			SendBit1();
-      			}
-     		else
-      			{
-       			SendBit0();
-      			}
+		{
+			SendBit1();
+		}
+		else
+		{
+			SendBit0();
+		}
 		mask>>=1;	//Next bit
-    		}
+	}
 
 	//6 Bit Code
-   	mask=0x20;
+	mask=0x20;
 	for(i=0; i<6; i++)
-		{
+	{
 		if(code&mask)
-			{
-       			SendBit1();
-      			}
-     		else
-     	 		{
-       			SendBit0();
-      			}
-     		mask>>=1;
+		{
+			SendBit1();
 		}
+		else
+		{
+			SendBit0();
+		}
+		mask>>=1;
+	}
 
 	//switch off IR-LED anyway, just to be sure
 	SetOutputInactive();
@@ -316,14 +316,14 @@ void SendRC5(unsigned char address, unsigned char code, unsigned char toggle, un
 {
 	unsigned char j;
 	if (SenderMode>=requiredmode)
-		{
+	{
 		for(j=1; j<=repeats; j++)
-			{
+		{
 			SendCommand(address, code, toggle);
 			if (j<repeats)			//skip last pause in sequence of repeated commands
-				{
+			{
 				HAL_Delay(89);		//wait 88.9ms
-				}
-		   	}
-	   	}
+			}
+		}
+	}
 }
