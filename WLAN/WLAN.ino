@@ -1,203 +1,168 @@
-/*
-
- Sends time from NTP to UART
- 
- Uses Time library to facilitate time computation
-
- 
- Known issue:
- -the exact "second" precision is not guaranteed because of the semplicity of the NTP imnplementation
-  normally the packet transit delay would be taken into account, but here is not
-
-   
- Based upon:
- Udp NTP Client
-
- Get the time from a Network Time Protocol (NTP) time server
- Demonstrates use of UDP sendPacket and ReceivePacket
- For more on NTP time servers and the messages needed to communicate with them,
- see http://en.wikipedia.org/wiki/Network_Time_Protocol
-
- created 4 Sep 2010
- by Michael Margolis
- modified 9 Apr 2012
- by Tom Igoe
- updated for the ESP8266 12 Apr 2015 
- by Ivan Grokhotkov
- modified
- by Martin Clausen
-
- This code is in the public domain.
-
- */
-
-#include <NTPClient.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#include <WiFiClient.h>
 #include <Ticker.h>
 #include <TimeLib.h>
+#include <NTPClient.h>
+#include "credentials.h"
 
-// Auto Light Sleep https://blog.creations.de/?p=149
-extern "C" {  
-  #include "user_interface.h"
-}
+#ifndef STASSID
+#define STASSID "myWLAN"
+#define STAPSK "secret"
+#endif
+
+#define UART_BAUD 115200
+#define UART_PORT 22
+#define packTimeout 5 // ms (if nothing more on UART, then send packet)
+#define bufferSize 8192
+
+#define NTPTimeCount 10000000
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+const int uart_port = UART_PORT;
+
+WiFiServer server(uart_port);
+WiFiClient client;
+
+uint8_t buf1[bufferSize];
+uint16_t i1=0;
+
+uint8_t buf2[bufferSize];
+uint16_t i2=0;
 
 WiFiUDP ntpUDP;
 // more generic NTP server "europe.pool.ntp.org"
 // time offset 3600 => 1 hour => Central European Time
 // refresh time frequency 600000 => 10 minutes
 NTPClient timeClient(ntpUDP, "fritz.box", 3600, 600000);
+const long ntpTimeCount = NTPTimeCount;
+long ntpTimeCounter = 0;
 
-// sleep duration between blocks of active transmission of time data to DCF77 receiver
-#define sleepcount 48
-
-// define pinout
-#define LedPin 2
-#define WPS 0
-
-int ThisHour,ThisMinute,ThisSecond,ThisDay,ThisMonth,ThisYear,DayOfW;
-
-int Dls;                    //DayLightSaving
-
-void setup()
-{
-  Serial.begin(115200);
-  Serial.println();
- 
-  pinMode(LedPin, OUTPUT);
-  digitalWrite(LedPin, LOW);
-  
-  wifi_set_sleep_type(LIGHT_SLEEP_T);
-  
-  //first connect to wifi network
-  //NOTE testing WiFi.status() BEFThisHour the FIRST WiFi.begin() seems to hang the system
-  //so we attempt a first connection BEFORE the main loop
-  
-  Serial.printf("\nVersuche Verbindung mit gespeicherter SSID '%s'\n", WiFi.SSID().c_str());
-  pinMode(WPS, INPUT_PULLUP); //Taster Eingang aktivieren
-  ConnectToWiFi();
-  CheckConnection();
-  // wait 10 seconds for clock to come up
-  delay(10000);
-  timeClient.begin();
-}
-
-void loop(){
-  int n;
-  //check the WLAN status
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    // word clock reads every hour. so we present a stretch of ~75 minutes signal in every activity block
-    for (n=0;n<25;n++) {
-      ReadAndDecodeTime();
-      delay(6000);
-      if (WiFi.status() != WL_CONNECTED)
-        break;
-    };
-    WiFi.mode( WIFI_OFF );
-    WiFi.forceSleepBegin();
-    delay(1);
-    Serial.println("Beginne Ruhezustand.");
-    // wait between blocks of active transmission
-    for (n=0;n<sleepcount;n++) {
-      Serial.printf("Aufwachen in %d Minuten.\n", (sleepcount - n) * 10);
-      delay(600000);   //10 Minuten
-    }
-    Serial.println("Ende Ruhezustand.");
-    Serial.printf("\nVersuche Verbindung mit gespeicherter SSID '%s'\n", WiFi.SSID().c_str());
-    WiFi.forceSleepWake();
-    delay(1);
-    WiFi.mode( WIFI_STA );
-    WiFi.begin();
-    AwaitConnection();
-    Serial.println();
-  }
-  else
-  {
-    // wait 1 Minute
-    delay(60000);
-    ReconnectToWiFi();
-  }
-}
-
-void ConnectToWiFi(){
+void setup() {
+  Serial.begin(UART_BAUD);
+  Serial.println("debug Booting");
   WiFi.mode(WIFI_STA);
-  String ssid = WiFi.SSID();
-  if (ssid.length() > 0)
-  {
-    Serial.print("Connecting to ");
-    Serial.println(WiFi.SSID().c_str());
-    WiFi.begin(); // letzte gespeicherte Zugangsdaten
-    if (!AwaitConnection())
-      return;
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-  } else {
-    Serial.print("Cannot connect, no SSID yet set.");
+  WiFi.begin(ssid, password);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("debug Connection Failed! Rebooting...");
+    delay(5000);
+    ESP.restart();
   }
-}
 
-void ReconnectToWiFi(){
-  Serial.println("\nReconnecting to WLAN");
-  WiFi.reconnect();
-  AwaitConnection();
-}
+  // Port defaults to 8266
+  // ArduinoOTA.setPort(8266);
 
-bool AwaitConnection(){
-  int Timeout = 60;
-  int timeoutCounter = 0;
-  bool success = true;
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    if (timeoutCounter++ > Timeout){
-      Serial.println("\nImpossible to connect to WLAN!");
-      success = false;
-      break;
-      }
-    };
-  return success;
-}
+  // Hostname defaults to esp8266-[ChipID]
+  // ArduinoOTA.setHostname("myesp8266");
 
-void CheckConnection(){
-  wl_status_t status = WiFi.status();
-  if(status == WL_CONNECTED) {
-    Serial.printf("\nErfolgreich angemeldet an SSID '%s'\n", WiFi.SSID().c_str());
-  } else {
-    //Wir waren nicht erfolgreich starten daher WPS
-    while (WiFi.status() != WL_CONNECTED) {
-      Serial.printf("\nKann keine WiFi Verbindung herstellen. Status ='%d'\n", status); 
-      Serial.println("WPS Taste am Router drücken.\n Dann WPS Taste am ESP drücken!");
-      while (digitalRead(WPS)!=0) {yield();}   
-      if(!startWPS())
-        Serial.println("Keine Verbindung über WPS herstellbar");  
+  // No authentication by default
+  // ArduinoOTA.setPassword("admin");
+
+  // Password can be set with it's md5 value as well
+  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else {  // U_FS
+      type = "filesystem";
     }
-  } 
+
+    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+    Serial.println("debug Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("debug \nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("debug Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("debug Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
+  ArduinoOTA.begin();
+  Serial.println("debug Booting ready.");
+  Serial.print("debug IP address: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println("debug Starting TCP Server.");
+  server.begin(); // start TCP server 
+
+  Serial.println("debug Connect to NTP server.");
+  timeClient.forceUpdate();
+  ReadAndDecodeTime();
 }
 
-//Startet die WPS Konfiguration
-bool startWPS() {
-  Serial.println("WPS Konfiguration gestartet.");
-  bool wpsSuccess = WiFi.beginWPSConfig();
-  if(wpsSuccess) {
-      // Muss nicht immer erfolgreich heißen! Nach einem Timeout ist die SSID leer
-      String newSSID = WiFi.SSID();
-      if(newSSID.length() > 0) {
-        // Nur wenn eine SSID gefunden wurde waren wir erfolgreich 
-        Serial.printf("WPS fertig. Erfolgreich angemeldet an SSID '%s'\n", newSSID.c_str());
-        wpsSuccess = AwaitConnection();
-      } else {
-        wpsSuccess = false;
-      }
+void loop() {
+  ArduinoOTA.handle();
+
+  if(!client.connected()) { // if client not connected
+    client = server.available(); // wait for it to connect
+    return;
   }
-  return wpsSuccess; 
+
+  // here we have a connected client
+
+  if(client.available()) {
+    while(client.available()) {
+      buf1[i1] = (uint8_t)client.read(); // read char from client
+      if(i1<bufferSize-1) i1++;
+    }
+    // now send to UART:
+    Serial.write(buf1, i1);
+    i1 = 0;
+  }
+
+  if(Serial.available()) {
+
+    // read the data until pause:
+    
+    while(1) {
+      if(Serial.available()) {
+        buf2[i2] = (char)Serial.read(); // read char from UART
+        if(i2<bufferSize-1) i2++;
+      } else {
+        //delayMicroseconds(packTimeoutMicros);
+        delay(packTimeout);
+        if(!Serial.available()) {
+          break;
+        }
+      }
+    }
+    
+    // now send to WiFi:
+    client.write((char*)buf2, i2);
+    i2 = 0;
+  }
+  
+  if(ntpTimeCounter > ntpTimeCount){
+    ntpTimeCounter = 0;
+    ReadAndDecodeTime();
+  } else {
+    ntpTimeCounter++;
+  }
 }
 
 void ReadAndDecodeTime() {
     int DayToEndOfMonth,DayOfWeekToEnd,DayOfWeekToSunday;
-
+    int ThisDay,ThisMonth,ThisYear,DayOfW;
+    int Dls;                    //DayLightSaving
     //get a random server from the pool
     timeClient.update();
 
@@ -205,27 +170,13 @@ void ReadAndDecodeTime() {
     if(timeClient.isTimeSet()) {
      
       // now convert NTP time into everyday time:
-      Serial.print("Unix time = ");
-      //note: we add two minutes because the dcf protocol send the time of the FOLLOWING minute
-      //and our transmission begins the next minute more
-      time_t ThisTime = timeClient.getEpochTime() + 120;
-      // print Unix time:
-      Serial.println(ThisTime);
+      time_t ThisTime = timeClient.getEpochTime();
   
       //calculate actual day to evaluate the summer/winter time of day ligh saving
       DayOfW = weekday(ThisTime);
       ThisDay = day(ThisTime);
       ThisMonth = month(ThisTime);
-      ThisYear = year(ThisTime);
-      Serial.print("date ");       // UTC is the time at Greenwich Meridian (GMT)
-      Serial.print(ThisYear);
-      Serial.print(' ');
-      Serial.print(ThisMonth);
-      Serial.print(' ');
-      Serial.print(ThisDay);
-      Serial.print(' ');
-      Serial.print(DayOfW+1);
-      Serial.print(' ');
+      ThisYear = year(ThisTime) - 2000;
     
       //check daylight saving
       Dls = 0;    //default winter time
@@ -259,18 +210,11 @@ void ReadAndDecodeTime() {
   
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
-      ThisHour = hour(ThisTime);
-      ThisMinute = minute(ThisTime);
-      ThisSecond = second(ThisTime);
-      Serial.print("time "); 
-      Serial.print(ThisHour); // print the hour
-      Serial.print(' ');
-      Serial.print(ThisMinute); // print the minute
-      Serial.print(' ');
-      Serial.println(ThisSecond); // print the second
+      Serial.printf("time %u %u %u\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
+      Serial.printf("date %u %u %u %u\n", ThisYear, ThisMonth, ThisDay, DayOfW);
     }
     else
     {
-      Serial.println("No time received via NTP. Sending no DCF signal.");
+      Serial.println("debug No time received via NTP.");
     }
 }
