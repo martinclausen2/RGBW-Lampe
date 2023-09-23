@@ -117,13 +117,13 @@ void SettingsReset2Defaults(void){
 	GLOBAL_settings_ptr->BeepVolume = 0x40;				//Volume of the key beep
 
 	alarm_t alarms[maxAlarm] = {
-			{ 1, 6, 20 },
-			{ 2, 6, 20 },
-			{ 3, 6, 20 },
-			{ 4, 6, 20 },
-			{ 5, 6, 20 },
-			{ 6, 7, 20 },
-			{ 7, 7, 20 }
+			{ 1, 6, 30 },
+			{ 2, 6, 30 },
+			{ 3, 6, 30 },
+			{ 4, 6, 30 },
+			{ 5, 6, 30 },
+			{ 6, 8, 30 },
+			{ 7, 8, 30 }
 	};
 
 	memcpy(GLOBAL_settings_ptr->Alarm, alarms, sizeof alarms);

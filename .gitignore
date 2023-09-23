@@ -6,3 +6,4 @@ Debug/*
 *.bin
 *.elf
 *.o
+/WLAN/credentials.h

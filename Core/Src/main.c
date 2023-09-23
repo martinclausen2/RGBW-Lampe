@@ -175,9 +175,6 @@ int main(void)
 	HAL_TIM_RegisterCallback(&htim11, HAL_TIM_PERIOD_ELAPSED_CB_ID, pMainTimerCallback);
 	HAL_TIM_Base_Start_IT(&htim11); //main control loop
 
-	//Start ESP32 reset pin is inverted
-	HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
-
 	SwAllLightOn();
   /* USER CODE END 2 */
 
@@ -990,10 +987,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, Volume_Pin|LCD_RST_Pin|LCD_CS_Pin|LCD_A0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, BRIGHT_HIGH_Pin|BRIGHT_LOW_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, ESP_RST_Pin|BRIGHT_HIGH_Pin|BRIGHT_LOW_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : AMP_SHTDN_Pin */
   GPIO_InitStruct.Pin = AMP_SHTDN_Pin;

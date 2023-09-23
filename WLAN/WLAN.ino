@@ -15,7 +15,7 @@
 
 #define UART_BAUD 115200
 #define UART_PORT 22
-#define packTimeout 5 // ms (if nothing more on UART, then send packet)
+#define packTimeout 20 // ms (if nothing more on UART, then send packet)
 #define bufferSize 8192
 
 #define NTPTimeCount 10000000
@@ -42,6 +42,8 @@ const long ntpTimeCount = NTPTimeCount;
 long ntpTimeCounter = 0;
 
 void setup() {
+  pinMode(14, OUTPUT);
+  digitalWrite(14, HIGH);
   Serial.begin(UART_BAUD);
   Serial.println("debug Booting");
   WiFi.mode(WIFI_STA);
@@ -56,10 +58,10 @@ void setup() {
   // ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  // ArduinoOTA.setHostname("myesp8266");
+  ArduinoOTA.setHostname("RGBW-Lampe");
 
   // No authentication by default
-  // ArduinoOTA.setPassword("admin");
+  ArduinoOTA.setPassword("admin");
 
   // Password can be set with it's md5 value as well
   // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
@@ -97,7 +99,7 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  Serial.println("debug Booting ready.");
+  Serial.println("debug Booting V1 ready.");
   Serial.print("debug IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -210,8 +212,14 @@ void ReadAndDecodeTime() {
   
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
-      Serial.printf("time %u %u %u\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
-      Serial.printf("date %u %u %u %u\n", ThisYear, ThisMonth, ThisDay, DayOfW);
+      Serial.printf("time %u %u %u", hour(ThisTime), minute(ThisTime), second(ThisTime));
+      delay(20);
+      Serial.println();
+      delay(20);
+      Serial.printf("date %u %u %u %u", ThisYear, ThisMonth, ThisDay, DayOfW);
+      delay(20);
+      Serial.println();
+      delay(20);
     }
     else
     {
