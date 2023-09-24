@@ -18,7 +18,7 @@
 #define packTimeout 5 // ms (if nothing more on UART, then send packet)
 #define bufferSize 8192
 
-#define NTPTimeCount 10000000
+#define NTPTimeCount 500000000
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
@@ -58,7 +58,7 @@ void setup() {
   // ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname("RGBW-Lampe");
+  // ArduinoOTA.setHostname("RGBW-Lampe");
 
   // No authentication by default
   ArduinoOTA.setPassword("admin");
@@ -99,7 +99,7 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  Serial.println("debug Booting V1 ready.");
+  Serial.println("debug Booting V2 ready.");
   Serial.print("debug IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -179,7 +179,6 @@ void ReadAndDecodeTime() {
       DayOfW = weekday(ThisTime);
       ThisDay = day(ThisTime);
       ThisMonth = month(ThisTime);
-      ThisYear = year(ThisTime) - 2000;
     
       //check daylight saving
       Dls = 0;    //default winter time
@@ -210,7 +209,13 @@ void ReadAndDecodeTime() {
       //add one hour if we are in summer time
       if (Dls == 1)
         ThisTime += 3600;
-  
+
+      // calculate date again from ThisTime as this might change due to a change in the time
+      DayOfW = weekday(ThisTime);
+      ThisDay = day(ThisTime);
+      ThisMonth = month(ThisTime);
+      ThisYear = year(ThisTime) - 2000;
+    
       // translate american weekday numbering (first day of week = sunday) to european weekday numbering (first day of week = monday)
       DayOfW--;
       if (DayOfW == 0) {
