@@ -17,6 +17,7 @@ void SettingsCommands_Init()
 	CLI_AddCmd("statusled", StatusLEDCmd, 1, TMC_None, "flash status led  - [flash count]");
 	CLI_AddCmd("fadelight", FadeLightCmd, 0, TMC_None, "mood light - <-f 1 | 0> time - <-t time> <-b brightness> <-mb maximum brightness>");
 	CLI_AddCmd("debug", DebugCmd, 0, TMC_None, "dummy command to absorb debug messages from host");
+	CLI_AddCmd("resetesp", ResetESPCmd, 0, TMC_None, "reset network controller ESP8266");
 }
 
 void printValueArray(unsigned char(*values)[])
@@ -489,5 +490,14 @@ uint8_t FadeLightCmd()
 
 uint8_t DebugCmd()
 {
+	return TE_OK;
+}
+
+uint8_t ResetESPCmd()
+{
+	//Restart ESP8266 reset pin is inverted
+	HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_RESET);
+	HAL_Delay(100);
+	HAL_GPIO_WritePin(ESP_RST_GPIO_Port, ESP_RST_Pin, GPIO_PIN_SET);
 	return TE_OK;
 }

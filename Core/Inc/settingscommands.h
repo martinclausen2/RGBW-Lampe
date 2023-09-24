@@ -28,5 +28,6 @@ uint8_t ResetSettingsCmd();
 uint8_t StatusLEDCmd();
 uint8_t FadeLightCmd();
 uint8_t DebugCmd();
+uint8_t ResetESPCmd();
 
 #endif // _SETTINGSCOMMANDS_H_

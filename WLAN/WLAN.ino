@@ -15,7 +15,7 @@
 
 #define UART_BAUD 115200
 #define UART_PORT 22
-#define packTimeout 20 // ms (if nothing more on UART, then send packet)
+#define packTimeout 5 // ms (if nothing more on UART, then send packet)
 #define bufferSize 8192
 
 #define NTPTimeCount 10000000
@@ -155,6 +155,7 @@ void loop() {
   
   if(ntpTimeCounter > ntpTimeCount){
     ntpTimeCounter = 0;
+    Serial.println();       //kill any pending transmissions
     ReadAndDecodeTime();
   } else {
     ntpTimeCounter++;
@@ -210,16 +211,18 @@ void ReadAndDecodeTime() {
       if (Dls == 1)
         ThisTime += 3600;
   
+      // translate american weekday numbering (first day of week = sunday) to european weekday numbering (first day of week = monday)
+      DayOfW--;
+      if (DayOfW == 0) {
+        DayOfW = 7;
+      };
+
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
-      Serial.printf("time %u %u %u", hour(ThisTime), minute(ThisTime), second(ThisTime));
-      delay(20);
-      Serial.println();
-      delay(20);
-      Serial.printf("date %u %u %u %u", ThisYear, ThisMonth, ThisDay, DayOfW);
-      delay(20);
-      Serial.println();
-      delay(20);
+      Serial.printf("time %u %u %u\r\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
+      //give STM32 time to process command
+      delay(200);   
+      Serial.printf("date %u %u %u %u\r\n", ThisYear, ThisMonth, ThisDay, DayOfW);
     }
     else
     {

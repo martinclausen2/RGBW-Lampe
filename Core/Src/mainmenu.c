@@ -56,7 +56,7 @@ void MainMenu()
 		break;
 	case 1:
 		CheckAlarm();
-		if (FocusChannel == FadeLightChannel)
+		if ((FocusChannel == FadeLightChannel) & LightOn)
 		{
 			FadeLight();
 		}
