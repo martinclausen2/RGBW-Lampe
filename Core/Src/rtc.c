@@ -54,6 +54,7 @@ HAL_StatusTypeDef Rtc_SetAlarm()
 void Rtc_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
 {
 	alarmState.alarmTrigger = true;
+	alarmState.skipAlarmCnt--;
 }
 
 //Checks for the next alarm, returns -1 if no alarm was found
