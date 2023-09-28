@@ -30,7 +30,11 @@ void CheckAlarm()
 		Rtc_SetAlarm();
 
 		//execute a new alarm, but only if none is already running
-		if (!AlarmFlag)
+		if (alarmState.skipAlarmCnt > 0)
+			{
+			alarmState.skipAlarmCnt--;
+			}
+		else if (!AlarmFlag)
 		{
 			for (int i = 0; i < maxChannel;	i++)
 			{
