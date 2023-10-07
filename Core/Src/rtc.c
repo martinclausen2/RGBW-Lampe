@@ -61,7 +61,6 @@ void Rtc_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
 void Find_NextAlarm()
 {
 	unsigned int j;
-	unsigned int i;
 	signed int curdifference;		//time between alarm and curent time
 	signed int mindifference=0;		//maximum difference is 7*24*60 Minutes = 10080 Minutes
 									//0 is no alarm on yet found
@@ -92,7 +91,7 @@ void Find_NextAlarm()
 			}
 
 			// set alarm no if alarm is closer or no alarm is set yet
-			if (((mindifference>curdifference) || 0==mindifference) && curmindifference<curdifference)
+			if (((mindifference>curdifference) || 0==mindifference))
 			{
 				mindifference=curdifference;
 				minAlarm=j;
