@@ -114,13 +114,21 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
 
+  if(ntpTimeCounter > ntpTimeCount){
+    ntpTimeCounter = 0;
+    Serial.println();       //kill any pending transmissions
+    ReadAndDecodeTime();
+  } else {
+    ntpTimeCounter++;
+  }
+
+  // only serial bridge code below, which will restart the loop, if no client connected
   if(!client.connected()) { // if client not connected
     client = server.available(); // wait for it to connect
     return;
   }
-
+  
   // here we have a connected client
-
   if(client.available()) {
     while(client.available()) {
       buf1[i1] = (uint8_t)client.read(); // read char from client
@@ -134,7 +142,7 @@ void loop() {
   if(Serial.available()) {
 
     // read the data until pause:
-    
+   
     while(1) {
       if(Serial.available()) {
         buf2[i2] = (char)Serial.read(); // read char from UART
@@ -151,14 +159,6 @@ void loop() {
     // now send to WiFi:
     client.write((char*)buf2, i2);
     i2 = 0;
-  }
-  
-  if(ntpTimeCounter > ntpTimeCount){
-    ntpTimeCounter = 0;
-    Serial.println();       //kill any pending transmissions
-    ReadAndDecodeTime();
-  } else {
-    ntpTimeCounter++;
   }
 }
 
