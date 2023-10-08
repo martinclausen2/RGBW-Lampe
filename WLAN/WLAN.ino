@@ -13,12 +13,20 @@
 #define STAPSK "secret"
 #endif
 
+// Error messages send to STM32
+// 1 flash => booting
+// 2 flash => no WLAN connection
+// 3 flash => no NTP
+// 4 flash => ESP OTA update in progress
+// 6 flash => ESP OTA update error
+// 8 flash => ESP OTA update finished
+
 #define UART_BAUD 115200
 #define UART_PORT 22
 #define packTimeout 5 // ms (if nothing more on UART, then send packet)
 #define bufferSize 8192
 
-#define NTPTimeCount 500000000
+#define NTPTimeCount 10000000 // connect about every 3 hours
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
@@ -45,14 +53,26 @@ void setup() {
   pinMode(14, OUTPUT);
   digitalWrite(14, HIGH);
   Serial.begin(UART_BAUD);
+  delay(5000);                          //wait for STM32 to come up
+  Serial.println("");                   //clear startup noise
+  delay(200);  
+  Serial.println("statusled 1");
+  delay(200);  
   Serial.println("debug Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("debug Connection Failed! Rebooting...");
+    delay(200);  
+    Serial.println("statusled 2");
+    delay(200);  
+    WiFi.disconnect();
     delay(5000);
     ESP.restart();
   }
+
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
 
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
@@ -77,15 +97,25 @@ void setup() {
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
     Serial.println("debug Start updating " + type);
+    delay(200);  
+    Serial.println("statusled 4");
+    delay(200);  
   });
   ArduinoOTA.onEnd([]() {
     Serial.println("debug \nEnd");
+    delay(200);  
+    Serial.println("statusled 8");
+    delay(200);  
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("debug Progress: %u%%\r", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("debug Error[%u]: ", error);
+    delay(200);  
+    Serial.println("statusled 6");
+    delay(200);  
+
     if (error == OTA_AUTH_ERROR) {
       Serial.println("Auth Failed");
     } else if (error == OTA_BEGIN_ERROR) {
@@ -99,20 +129,29 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  Serial.println("debug Booting V2 ready.");
+  Serial.println("debug Booting V4 ready.");
+  delay(20);  
   Serial.print("debug IP address: ");
   Serial.println(WiFi.localIP());
 
+  delay(20);  
   Serial.println("debug Starting TCP Server.");
   server.begin(); // start TCP server 
 
+  delay(20);  
   Serial.println("debug Connect to NTP server.");
+  delay(20);  
   timeClient.forceUpdate();
-  ReadAndDecodeTime();
+  ReadAndDecodeTime(); //status led is set or reset here any way
 }
 
 void loop() {
   ArduinoOTA.handle();
+
+//  if (WiFi.status() != WL_CONNECTED) {
+  //  Serial.println("debug WiFi.disconnect();
+    //ESP.restart();
+ // }
 
   if(ntpTimeCounter > ntpTimeCount){
     ntpTimeCounter = 0;
@@ -120,6 +159,7 @@ void loop() {
     ReadAndDecodeTime();
   } else {
     ntpTimeCounter++;
+    delay(1);               //create a less random loop timing
   }
 
   // only serial bridge code below, which will restart the loop, if no client connected
@@ -224,13 +264,21 @@ void ReadAndDecodeTime() {
 
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
+      delay(200);  
       Serial.printf("time %u %u %u\r\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
       //give STM32 time to process command
       delay(200);   
       Serial.printf("date %u %u %u %u\r\n", ThisYear, ThisMonth, ThisDay, DayOfW);
+      delay(200);  
+      Serial.println("statusled 0");
+      delay(200);  
     }
     else
     {
       Serial.println("debug No time received via NTP.");
+     //give STM32 time to process command
+      delay(200);  
+      Serial.println("statusled 3");
+      delay(200);  
     }
 }
