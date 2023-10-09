@@ -53,7 +53,6 @@ void Execute_Terminal()
 	{
 		UARTEx_RxEventCallbackCore();
 	}
-	CLI_Execute();
 }
 
 void _reset_fcn()
@@ -141,8 +140,11 @@ void TUSART_ProcessInput(uint8_t* pData, uint16_t Size)
 	{
 		char c = (char)*pBuff;
 		CLI_EnterChar(c);
+		if(c == TERM_KEY_ENTER)
+			CLI_Execute();
 		pBuff++;
 	}
+	CLI_Execute();
 }
 
 /**

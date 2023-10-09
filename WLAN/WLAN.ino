@@ -55,17 +55,13 @@ void setup() {
   Serial.begin(UART_BAUD);
   delay(5000);                          //wait for STM32 to come up
   Serial.println("");                   //clear startup noise
-  delay(200);  
   Serial.println("statusled 1");
-  delay(200);  
   Serial.println("debug Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("debug Connection Failed! Rebooting...");
-    delay(200);  
     Serial.println("statusled 2");
-    delay(200);  
     WiFi.disconnect();
     delay(5000);
     ESP.restart();
@@ -97,25 +93,19 @@ void setup() {
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
     Serial.println("debug Start updating " + type);
-    delay(200);  
     Serial.println("statusled 4");
-    delay(200);  
   });
   ArduinoOTA.onEnd([]() {
     Serial.println("debug \nEnd");
-    delay(200);  
     Serial.println("statusled 8");
-    delay(200);  
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("debug Progress: %u%%\r", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("debug Error[%u]: ", error);
-    delay(200);  
     Serial.println("statusled 6");
-    delay(200);  
-
+    
     if (error == OTA_AUTH_ERROR) {
       Serial.println("Auth Failed");
     } else if (error == OTA_BEGIN_ERROR) {
@@ -130,17 +120,13 @@ void setup() {
   });
   ArduinoOTA.begin();
   Serial.println("debug Booting V4 ready.");
-  delay(20);  
   Serial.print("debug IP address: ");
   Serial.println(WiFi.localIP());
 
-  delay(20);  
   Serial.println("debug Starting TCP Server.");
   server.begin(); // start TCP server 
 
-  delay(20);  
   Serial.println("debug Connect to NTP server.");
-  delay(20);  
   timeClient.forceUpdate();
   ReadAndDecodeTime(); //status led is set or reset here any way
 }
@@ -264,21 +250,14 @@ void ReadAndDecodeTime() {
 
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
-      delay(200);  
       Serial.printf("time %u %u %u\r\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
-      //give STM32 time to process command
-      delay(200);   
       Serial.printf("date %u %u %u %u\r\n", ThisYear, ThisMonth, ThisDay, DayOfW);
-      delay(200);  
       Serial.println("statusled 0");
-      delay(200);  
     }
     else
     {
       Serial.println("debug No time received via NTP.");
      //give STM32 time to process command
-      delay(200);  
       Serial.println("statusled 3");
-      delay(200);  
     }
 }
