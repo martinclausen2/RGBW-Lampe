@@ -68,7 +68,7 @@ inline void TUSART_PutChar(char c)
 	while(huart_terminal->gState != HAL_UART_STATE_READY){}
 	// copy content into reserved memory
 	memcpy((uint8_t*)&aTXBuffer, (uint8_t *)&c, 1);
-	while(HAL_BUSY == HAL_UART_Transmit_DMA(huart_terminal, (uint8_t*)&aTXBuffer, 1)) {}
+	HAL_UART_Transmit_DMA(huart_terminal, (uint8_t*)&aTXBuffer, 1);
 }
 
 // TODO add FIFO to aggregate char before sending and avoid waiting for empty buffer.
@@ -80,7 +80,7 @@ void TUSART_Print(const char* str)
 	while(huart_terminal->gState != HAL_UART_STATE_READY){}
 	// copy content into reserved memory
 	memcpy((uint8_t*)&aTXBuffer, str, length);
-	while(HAL_BUSY == HAL_UART_Transmit_DMA(huart_terminal, (uint8_t*)&aTXBuffer, length)){}
+	HAL_UART_Transmit_DMA(huart_terminal, (uint8_t*)&aTXBuffer, length);
 }
 
 /**
