@@ -24,6 +24,7 @@ uint8_t aRXBufferB[RX_BUFFER_SIZE];
 
 __IO bool		rxDataPending;
 __IO bool		rxDataBlocked;
+__IO bool		restartUART;
 __IO uint32_t   uwNbReceivedChars;
 uint8_t *pBufferReadyForUser;
 uint8_t *pBufferReadyForReception;
@@ -37,21 +38,31 @@ void Init_Terminal(UART_HandleTypeDef *handle_huart)
 {
 	huart_terminal = handle_huart;
 	CLI_Init(TDC_Time);
+	restartUART = false;
 	TUSART_StartReception();
 };
 
 /* needs to be called frequently */
 void Execute_Terminal()
 {
-	/* Process received data that has been extracted from Rx User buffer */
-	if (rxDataPending)
+	if (restartUART)
 	{
-		TUSART_ProcessInput(pBufferReadyForUser, uwNbReceivedChars);
-		rxDataPending = false;
+		HAL_UART_DMAStop(huart_terminal);
+		CLI_Printf("\r\nRestart UART.");
+		TUSART_StartReceptionCore();
 	}
-	if (rxDataBlocked)
+	else
 	{
-		UARTEx_RxEventCallbackCore();
+		/* Process received data that has been extracted from Rx User buffer */
+		if (rxDataPending)
+		{
+			TUSART_ProcessInput(pBufferReadyForUser, uwNbReceivedChars);
+			rxDataPending = false;
+		}
+		if (rxDataBlocked)
+		{
+			UARTEx_RxEventCallbackCore();
+		}
 	}
 }
 
@@ -89,6 +100,20 @@ void TUSART_Print(const char* str)
  */
 void TUSART_StartReception(void)
 {
+	//	HAL_StatusTypeDef HAL_UART_RegisterRxEventCallback(UART_HandleTypeDef *huart, pUART_RxEventCallbackTypeDef pCallback)
+	pUART_RxEventCallbackTypeDef pRxCallback = *HAL_UARTEx_RxEventCallback;
+	HAL_UART_RegisterRxEventCallback(huart_terminal, pRxCallback);
+
+	// Register Error Callback
+	pUART_CallbackTypeDef pErrorCallback = *HAL_UART_ErrorCallback;
+	HAL_UART_RegisterCallback(huart_terminal, HAL_UART_ERROR_CB_ID, pErrorCallback);
+
+	TUSART_StartReceptionCore();
+}
+
+void TUSART_StartReceptionCore(void)
+{
+
 	/* Initializes Buffer swap mechanism (used in User callback) :
 	   - 2 physical buffers aRXBufferA and aRXBufferB (RX_BUFFER_SIZE length)
 	 */
@@ -96,10 +121,7 @@ void TUSART_StartReception(void)
 	pBufferReadyForUser      = aRXBufferB;
 	uwNbReceivedChars        = 0;
 	rxDataPending 			 = false;
-
-	//	HAL_StatusTypeDef HAL_UART_RegisterRxEventCallback(UART_HandleTypeDef *huart, pUART_RxEventCallbackTypeDef pCallback)
-	pUART_RxEventCallbackTypeDef pCallback = *HAL_UARTEx_RxEventCallback;
-	HAL_UART_RegisterRxEventCallback(huart_terminal, pCallback);
+	restartUART				 = false;
 
 	/* Initializes Rx sequence using Reception To Idle event API.
      As DMA channel associated to UART Rx is configured as Circular,
@@ -160,6 +182,18 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	last_Size = Size;
 	UARTEx_RxEventCallbackCore();
 }
+
+/**
+ * @brief  UART error callbacks.
+ * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
+ *                the configuration information for the specified UART module.
+ * @retval None
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	restartUART = true;
+}
+
 
 void UARTEx_RxEventCallbackCore()
 {

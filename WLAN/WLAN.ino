@@ -50,8 +50,6 @@ const long ntpTimeCount = NTPTimeCount;
 long ntpTimeCounter = 0;
 
 void setup() {
-  pinMode(14, OUTPUT);
-  digitalWrite(14, HIGH);
   Serial.begin(UART_BAUD);
   delay(5000);                          //wait for STM32 to come up
   Serial.println("");                   //clear startup noise
