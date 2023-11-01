@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include "EspMQTTClient.h"
 #include <WiFiClient.h>
 #include <Ticker.h>
 #include <TimeLib.h>
@@ -17,9 +17,6 @@
 // 1 flash => booting
 // 2 flash => no WLAN connection
 // 3 flash => no NTP
-// 4 flash => ESP OTA update in progress
-// 6 flash => ESP OTA update error
-// 8 flash => ESP OTA update finished
 
 #define UART_BAUD 115200
 #define UART_PORT 22
@@ -32,8 +29,15 @@ const char* ssid = STASSID;
 const char* password = STAPSK;
 const int uart_port = UART_PORT;
 
+EspMQTTClient client(
+  ssid,
+  password,
+  "192.168.178.123", // MQTT Broker server ip
+  "RGBW-Lampe 3"     // Client name that uniquely identify your device
+);
+
 WiFiServer server(uart_port);
-WiFiClient client;
+WiFiClient UARTclient;
 
 uint8_t buf1[bufferSize];
 uint16_t i1=0;
@@ -55,74 +59,23 @@ void setup() {
   Serial.println("");                   //clear startup noise
   Serial.println("statusled 1");
   Serial.println("debug Booting");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("debug Connection Failed! Rebooting...");
-    Serial.println("statusled 2");
-    WiFi.disconnect();
-    delay(5000);
-    ESP.restart();
+  client.enableOTA("admin", 8266); // Enable OTA (Over The Air) updates. Password defaults to MQTTPassword. Port is the default OTA port. Can be overridden with enableOTA("password", port).
   }
 
-  WiFi.setAutoReconnect(true);
-  WiFi.persistent(true);
+void onConnectionEstablished() {
 
-  // Port defaults to 8266
-  // ArduinoOTA.setPort(8266);
-
-  // Hostname defaults to esp8266-[ChipID]
-  // ArduinoOTA.setHostname("RGBW-Lampe");
-
-  // No authentication by default
-  ArduinoOTA.setPassword("admin");
-
-  // Password can be set with it's md5 value as well
-  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
-    } else {  // U_FS
-      type = "filesystem";
-    }
-
-    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("debug Start updating " + type);
-    Serial.println("statusled 4");
+  client.subscribe("RGBW-Lampe", [] (const String &payload)  {
+    Serial.println(""); // clear queue
+    Serial.println(payload);
   });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("debug \nEnd");
-    Serial.println("statusled 8");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("debug Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("debug Error[%u]: ", error);
-    Serial.println("statusled 6");
-    
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
-  ArduinoOTA.begin();
+
   Serial.println("debug Booting V4 ready.");
   Serial.print("debug IP address: ");
   Serial.println(WiFi.localIP());
 
   Serial.println("debug Starting TCP Server.");
   server.begin(); // start TCP server 
+  client.publish("RGBW-Lampe/status", client.getMqttClientName());
 
   Serial.println("debug Connect to NTP server.");
   timeClient.forceUpdate();
@@ -130,16 +83,10 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
-
-//  if (WiFi.status() != WL_CONNECTED) {
-  //  Serial.println("debug WiFi.disconnect();
-    //ESP.restart();
- // }
+  client.loop();    // WIFI and MQTT client
 
   if(ntpTimeCounter > ntpTimeCount){
     ntpTimeCounter = 0;
-    Serial.println();       //kill any pending transmissions
     ReadAndDecodeTime();
   } else {
     ntpTimeCounter++;
@@ -147,15 +94,15 @@ void loop() {
   }
 
   // only serial bridge code below, which will restart the loop, if no client connected
-  if(!client.connected()) { // if client not connected
-    client = server.available(); // wait for it to connect
+  if(!UARTclient.connected()) { // if client not connected
+    UARTclient = server.available(); // wait for it to connect
     return;
   }
   
   // here we have a connected client
-  if(client.available()) {
-    while(client.available()) {
-      buf1[i1] = (uint8_t)client.read(); // read char from client
+  if(UARTclient.available()) {
+    while(UARTclient.available()) {
+      buf1[i1] = (uint8_t)UARTclient.read(); // read char from client
       if(i1<bufferSize-1) i1++;
     }
     // now send to UART:
@@ -181,7 +128,7 @@ void loop() {
     }
     
     // now send to WiFi:
-    client.write((char*)buf2, i2);
+    UARTclient.write((char*)buf2, i2);
     i2 = 0;
   }
 }
@@ -248,6 +195,7 @@ void ReadAndDecodeTime() {
 
       //now that we know the dls state, we can calculate the time to
       // print the hour, minutes and seconds:
+      Serial.println(""); // clear queue
       Serial.printf("time %u %u %u\r\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
       Serial.printf("date %u %u %u %u\r\n", ThisYear, ThisMonth, ThisDay, DayOfW);
       Serial.println("statusled 0");
