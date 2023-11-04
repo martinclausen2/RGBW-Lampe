@@ -6,12 +6,25 @@
 #include <Ticker.h>
 #include <TimeLib.h>
 #include <NTPClient.h>
-#include "credentials.h"
+#include "credentials.h" // not part of the git repository due to confidential information, please create you own file to inject the WIFI credetials or exclude this line and add them delow
 
 #ifndef STASSID
 #define STASSID "myWLAN"
 #define STAPSK "secret"
 #endif
+
+// please adjust the following lines for your environment
+#define NTPserver "fritz.box"
+#define MQTTbroker "192.168.178.123"
+#define nodename "RGBW-Lampe Node"
+#define publishtopicstatus "RGBW-Lampe/node/status"
+#define publishtopicNTP "RGBW-Lampe/node/NTP"
+#define publishtopicswitch "RGBW-Lampe/node/switch"
+#define subscribetopicswitch "RGBW-Lampe/switch"
+#define subscribetopic "RGBW-Lampe"
+#define version "5"
+
+#define switchGPIO 12
 
 // Error messages send to STM32
 // 1 flash => booting
@@ -25,15 +38,13 @@
 
 #define NTPTimeCount 10000000 // connect about every 3 hours
 
-const char* ssid = STASSID;
-const char* password = STAPSK;
 const int uart_port = UART_PORT;
 
 EspMQTTClient client(
-  ssid,
-  password,
-  "192.168.178.123", // MQTT Broker server ip
-  "RGBW-Lampe 3"     // Client name that uniquely identify your device
+  STASSID,
+  STAPSK,
+  MQTTbroker, // MQTT Broker server ip
+  nodename    // Client name that uniquely identify your device
 );
 
 WiFiServer server(uart_port);
@@ -49,7 +60,7 @@ WiFiUDP ntpUDP;
 // more generic NTP server "europe.pool.ntp.org"
 // time offset 3600 => 1 hour => Central European Time
 // refresh time frequency 600000 => 10 minutes
-NTPClient timeClient(ntpUDP, "fritz.box", 3600, 600000);
+NTPClient timeClient(ntpUDP, NTPserver, 3600, 600000);
 const long ntpTimeCount = NTPTimeCount;
 long ntpTimeCounter = 0;
 
@@ -59,23 +70,39 @@ void setup() {
   Serial.println("");                   //clear startup noise
   Serial.println("statusled 1");
   Serial.println("debug Booting");
+  pinMode(switchGPIO, OUTPUT);
   client.enableOTA("admin", 8266); // Enable OTA (Over The Air) updates. Password defaults to MQTTPassword. Port is the default OTA port. Can be overridden with enableOTA("password", port).
   }
 
 void onConnectionEstablished() {
 
-  client.subscribe("RGBW-Lampe", [] (const String &payload)  {
+  client.subscribe(subscribetopic, [] (const String &payload)  {
     Serial.println(""); // clear queue
     Serial.println(payload);
   });
 
-  Serial.println("debug Booting V4 ready.");
-  Serial.print("debug IP address: ");
-  Serial.println(WiFi.localIP());
+  client.subscribe(subscribetopicswitch, [] (const String &payload)  {
+    if(payload == "ON")
+    {
+      digitalWrite(switchGPIO, HIGH);
+      client.publish(publishtopicswitch, "switch on");
+    }
+    else if(payload == "OFF")
+    {
+      digitalWrite(switchGPIO, LOW);
+      client.publish(publishtopicswitch, "switch off");
+    }
+  });
 
-  Serial.println("debug Starting TCP Server.");
+  IPAddress ip = WiFi.localIP();
+  char buffer[60];
+  sprintf(buffer, "%s started version %s with IP %d.%d.%d.%d", client.getMqttClientName(), version, ip[0], ip[1], ip[2], ip[3]);
+  client.publish(publishtopicstatus, buffer);
+
+  Serial.println("debug Booting done.");
+  Serial.print("debug ");
+  Serial.println(buffer);
   server.begin(); // start TCP server 
-  client.publish("RGBW-Lampe/status", client.getMqttClientName());
 
   Serial.println("debug Connect to NTP server.");
   timeClient.forceUpdate();
@@ -137,6 +164,8 @@ void ReadAndDecodeTime() {
     int DayToEndOfMonth,DayOfWeekToEnd,DayOfWeekToSunday;
     int ThisDay,ThisMonth,ThisYear,DayOfW;
     int Dls;                    //DayLightSaving
+    char buffer[60];
+
     //get a random server from the pool
     timeClient.update();
 
@@ -199,11 +228,15 @@ void ReadAndDecodeTime() {
       Serial.printf("time %u %u %u\r\n", hour(ThisTime), minute(ThisTime), second(ThisTime));
       Serial.printf("date %u %u %u %u\r\n", ThisYear, ThisMonth, ThisDay, DayOfW);
       Serial.println("statusled 0");
+      sprintf(buffer, "received timestamp %02u:%02u:%02u %02u-%02u-%02u day %u", hour(ThisTime), minute(ThisTime), second(ThisTime), ThisYear, ThisMonth, ThisDay, DayOfW);
+      client.publish(publishtopicNTP, buffer);
     }
     else
     {
-      Serial.println("debug No time received via NTP.");
      //give STM32 time to process command
+      Serial.println(""); // clear queue
       Serial.println("statusled 3");
+      Serial.println("debug No time received via NTP.");
+      client.publish(publishtopicNTP, "No time received.");
     }
 }
