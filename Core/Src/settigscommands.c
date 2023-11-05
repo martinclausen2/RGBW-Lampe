@@ -331,9 +331,9 @@ uint8_t AlarmCmd()
 
 	if (CLI_GetArgDecByFlag("-a", &set))
 	{
-		if (set = 0)
+		if (set == 0)
 			AlarmEnd();
-		else if (set = 1)
+		else if (set == 1)
 			alarmState.alarmTrigger = 1;
 	}
 
