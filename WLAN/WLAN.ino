@@ -13,16 +13,9 @@
 #define STAPSK "secret"
 #endif
 
-// please adjust the following lines for your environment
-#define NTPserver "fritz.box"
-#define MQTTbroker "192.168.178.123"
-#define nodename "RGBW-Lampe Node"
-#define publishtopicstatus "RGBW-Lampe/node/status"
-#define publishtopicNTP "RGBW-Lampe/node/NTP"
-#define publishtopicswitch "RGBW-Lampe/node/switch"
-#define subscribetopicswitch "RGBW-Lampe/switch"
-#define subscribetopic "RGBW-Lampe"
-#define version "5"
+// please adjust the following file for your environment
+#include "device1.h"
+#define version "6"
 
 #define switchGPIO 12
 
@@ -36,7 +29,7 @@
 #define packTimeout 5 // ms (if nothing more on UART, then send packet)
 #define bufferSize 8192
 
-#define NTPTimeCount 10000000 // connect about every 3 hours
+#define NTPTimeCount 80000000 // connect about every 24 hours
 
 const int uart_port = UART_PORT;
 
@@ -95,8 +88,9 @@ void onConnectionEstablished() {
   });
 
   IPAddress ip = WiFi.localIP();
-  char buffer[60];
-  sprintf(buffer, "%s started version %s with IP %d.%d.%d.%d", client.getMqttClientName(), version, ip[0], ip[1], ip[2], ip[3]);
+  char buffer[80];
+  sprintf(buffer, "%s chip %x started version %s with IP %d.%d.%d.%d", client.getMqttClientName(), ESP.getChipId(), version, ip[0], ip[1], ip[2], ip[3]);
+  
   client.publish(publishtopicstatus, buffer);
 
   Serial.println("debug Booting done.");

@@ -1,0 +1,8 @@
+#define NTPserver "fritz.box"
+#define MQTTbroker "192.168.178.123"
+#define nodename "RGBW-Lampe2"
+#define publishtopicstatus "RGBW-Lampe/2/status"
+#define publishtopicNTP "RGBW-Lampe/2/NTP"
+#define publishtopicswitch "RGBW-Lampe/2/switch"
+#define subscribetopicswitch "RGBW-Lampe/switch"
+#define subscribetopic "RGBW-Lampe"
