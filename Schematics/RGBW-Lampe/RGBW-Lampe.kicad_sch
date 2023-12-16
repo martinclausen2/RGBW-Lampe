@@ -1,0 +1,48 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid ab0a3b6b-afc0-4add-ad3d-4ae881fc30c8)
+
+  (paper "User" 318.084 315.874)
+
+  (lib_symbols
+  )
+
+
+  (sheet (at 67.31 107.95) (size 50.8 38.1) (fields_autoplaced)
+    (stroke (width 0) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 00000000-0000-0000-0000-0000601a61a3)
+    (property "Sheetname" "Control" (at 67.31 107.2384 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "RGBW-Lampe Control.kicad_sch" (at 67.31 146.6346 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "RGBW-Lampe"
+        (path "/ab0a3b6b-afc0-4add-ad3d-4ae881fc30c8" (page "2"))
+      )
+    )
+  )
+
+  (sheet (at 139.7 109.22) (size 50.8 35.56) (fields_autoplaced)
+    (stroke (width 0) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 00000000-0000-0000-0000-0000601a631d)
+    (property "Sheetname" "Power" (at 139.7 108.5084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "RGBW-Lampe Power.kicad_sch" (at 139.7 145.3646 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "RGBW-Lampe"
+        (path "/ab0a3b6b-afc0-4add-ad3d-4ae881fc30c8" (page "3"))
+      )
+    )
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)
