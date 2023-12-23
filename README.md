@@ -116,31 +116,33 @@ The serial port uses the following parameter 115200 Baud rate, data site 8, pari
 
 This terminal is exposed via the WLAN module to the user on port 22.
 
-The commands can be listed by sending the command 'help'.
+The commands can be listed by sending the command `help`.
 
 ## WLAN
 
-WLAN credentials must be set at compile time in the file 'credentials.h'.
+WLAN credentials must be set at compile time in the file `credentials.h`.
 
 ## MQTT
 
-Broker and node name must be defined at compile time in the file 'device?.h':
+Broker and node name must be defined at compile time in the file `device?.h`:
+
 	#define MQTTbroker "192.168.178.123"
 	#define nodename "RGBW-Lampe1"
 
-Topics might be freely defined at compile time in the file 'device?.h'. The following section contains some examples.
+Topics might be freely defined at compile time in the file `device?.h`. The following section contains some examples.
 
 The appliance publises to different topics its status:
+
 	#define publishtopicstatus "RGBW-Lampe/1/status"
 	#define publishtopicNTP "RGBW-Lampe/1/NTP"
 	#define publishtopicswitch "RGBW-Lampe/1/switch"
 
-The appliance subscribes to two topics defined at compile time in the file 'device?.h'. The names are here choosen to be independent of the device id.
+The appliance subscribes to two topics defined at compile time in the file `device?.h`. The names are here choosen to be independent of the device id.
 
 ### Switch
 
 	#define subscribetopicswitch "RGBW-Lampe/switch"
-The commands are 'on' and 'off'
+The commands are `on` and `off`
 
 	#define subscribetopic "RGBW-Lampe"
 All data is forwarded to the terminal of the MCU.
@@ -213,7 +215,7 @@ trigger, reset, set alarm skip count
 
 	beep <-s 1 | 0> volume - <-v volume> volume level - <-vl 1 | 0>
 
-set beep status
+Call without an parameters to hear a beep. Using the `-s` parameter allows to turn the acustic signal on and off. Volume allows for a continues selection of the volume between 0 and 255. The volume level sets the range in which the volume is adjustable.
 
 ### Power
 
