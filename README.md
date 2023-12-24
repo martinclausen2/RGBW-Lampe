@@ -5,7 +5,9 @@ The "RGBW-Lampe" projects allows to create full color lighting appliances.
 ## Features
 
 - Four independent LED driver channels
-  - High dynamic dimming range using PT4115 LED driver
+  - Optimal to drive RGBW LED modules.
+  - Mood light mode
+  - High dynamic dimming range ideal for color mixing
 - Status LED to indicate power on, channel, standby, and network status
 - Brightness measurement to adjust brightness at power on
 - IR remote control (receiver and sender)
@@ -17,14 +19,20 @@ The "RGBW-Lampe" projects allows to create full color lighting appliances.
 - Protected electronic power switch
 
 ## Technical Features
-- ARM Cortex M3 based STM32L151 microcontroller
+- ARM Cortex M3 based STM32L151A microcontroller
   - EEPROM for permanent storage of settings
-- ESP8266 based WLAN connectivity
+- ESP8266 based WLAN connectivity ESP-12
 - RC5 based communication (sender and receiver)
 - Four PT4115 step-down LED driver
   - PWM input
   - LED driving current up to 1A
+  - Short rise time of driving current to drive LED with very low duty PWM signals needed for color mixing
+- Input voltage 9 to 15 V
 - High dynamic brightness measurement with low cost phototransistor SFH320
+- Pin header for observing and intercepting serial communication between MCU and WLAN module
+  - Debugging
+  - Initial programming of WLAN module
+  - Redirecting communication to / from serial port of J-LINK
 - PCB prepared (not used in current software) for 
   - Acceleration sensor
   - Pin headers for extension with additional I2C devices, LCD, or LED drivers
@@ -40,10 +48,10 @@ The low cost WLAN module ESP-12 based on the ESP8266 is used to connect to home 
 ### MCU
 The STM32L1 series features for this application relevant features like a large number of timers, and an embedded EEPROM.
 
-The MCU can be programmed and debugged via SWD accessable through a custom pin header, that also exposes the serial port.
+The MCU can be programmed and debugged via SWD accessible through a custom pin header, that also exposes the serial port.
 
 ### LED Driver
-Collor mixing requires a large dimming range, which was realized via PWM dimming. The LED driver PT4115 has a short rise time allowing to create also very short current pulses to drive the LEDs at low levels.
+Color mixing requires a large dimming range, which was realized via PWM dimming. The LED driver PT4115 has a short rise time allowing to create also very short current pulses to drive the LEDs at low levels.
 
 ### Logic Power Supply
 A step down voltage regulator generates 3.3 V logic supply. It needs to be capable to provide good load regulation and sufficient current for the WLAN module as well as the IR-LED.
@@ -56,7 +64,7 @@ To receive RC5 commands the output of the IR receiver is sampled at a rate of ab
 
 ### Brightness Sensor
 
-The ambient brightness is sensed via an in expensive a broadly available phototransistor SFA 320. To enhance the dynamic range, the MCU can switch the bias current between two different levels.
+The ambient brightness is sensed via an inexpensive and broadly available phototransistor SFA 320. To enhance the dynamic range, the MCU can switch the bias current between two different levels.
 The precision is fully sufficient to adjust the brightness of the power LEDs at power on and dim the status LED in standby.
 
 ## Software
@@ -68,13 +76,17 @@ The time is fetched on start and about once per day later from the NTP server.
 The terminal is exposed via port 22.
 
 ## Known Limitations
+- The WLAN module may lose its connection when allowing Protected Management Frames (PMF) by the WLAN access point.
+  - For Fritz!Box the option is found under WLAN -> Security -> Additional Security Settings
+	 - German: Leave the option "Unterstützung für geschützte Anmeldungen von WLAN-Geräten (PMF) aktivieren" **unchecked**
 - The WLAN module has fixed settings. Recompilation and flashing of the ESP8266 is needed to change them.
   - MQTT (device?.h)
   - WLAN (credentials.h)
   - NTP server (device?.h)
 - The WLAN module exposes the ports of terminal (22) and MQTT without any protection.
-- Commands received via MQTT and updates from the NTP server are injected into the terminal communication. Commands from the terminal might be interruped by MQTT or time updates.
+- Commands received via MQTT and updates from the NTP server are injected into the terminal communication. Commands from the terminal might be interrupted by MQTT or time updates.
 - OTA updates of the STM32 are not implemented yet.
+- During power on, the LED driver operate at full current for a fraction of a second.
 
 # User Manual
 
@@ -131,7 +143,7 @@ Broker and node name must be defined at compile time in the file `device?.h`:
 
 Topics might be freely defined at compile time in the file `device?.h`. The following section contains some examples.
 
-The appliance publises to different topics its status:
+The appliance publishes to different topics its status:
 
 	#define publishtopicstatus "RGBW-Lampe/1/status"
 	#define publishtopicNTP "RGBW-Lampe/1/NTP"
@@ -139,15 +151,24 @@ The appliance publises to different topics its status:
 
 The appliance subscribes to two topics defined at compile time in the file `device?.h`. The names are here choosen to be independent of the device id.
 
+### MQTT to terminal forwarder
+
+	#define subscribetopic "RGBW-Lampe"
+All data is forwarded to the terminal of the MCU. See terminal section below for details.
+
 ### Switch
 
 	#define subscribetopicswitch "RGBW-Lampe/switch"
 The commands are `on` and `off`
 
-	#define subscribetopic "RGBW-Lampe"
-All data is forwarded to the terminal of the MCU.
 
 ## Commands Terminal
+
+The terminal is accessible at three different routes:
+
+- Interception of the serial WLAN - MCU communication through the pin header on the PCB
+- Port 22 of the WLAN module
+- MQTT topic defined by `subscribetopic`
 
 ### Set Brightness
 
@@ -155,7 +176,7 @@ All data is forwarded to the terminal of the MCU.
 
 set brightness values
 
-| Type | Decription |
+| Type | Description |
 | :--- | :--------- |
 | 0 | Brightness last used before lights were switched off. |
 | 1 | Minimum brightness when switched on |
@@ -215,7 +236,7 @@ trigger, reset, set alarm skip count
 
 	beep <-s 1 | 0> volume - <-v volume> volume level - <-vl 1 | 0>
 
-Call without an parameters to hear a beep. Using the `-s` parameter allows to turn the acustic signal on and off. Volume allows for a continues selection of the volume between 0 and 255. The volume level sets the range in which the volume is adjustable.
+Call without any parameters to hear a beep. Using the `-s` parameter allows to turn the acoustic signal on and off. Volume allows for a continues selection of the volume between 0 and 255. The volume level sets the range in which the volume is adjustable.
 
 ### Power
 
