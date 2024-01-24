@@ -18,7 +18,7 @@ bool fadeLightFlag = false;
 
 // array with meaning full color combinations
 
-unsigned int colors[colorCount][maxChannel]=
+int colors[colorCount][maxChannel]=
 {
 		{128, 000, 000, 000},
 
@@ -94,7 +94,7 @@ int FadeLight_StepDim(unsigned int i)
 		int totalDeltaBrightness = (Brightness[FadeLightChannel]*(colors[fadeColor][i]-colors[oldFadeColor][i])) >> 8;
 		if (totalDeltaBrightness)
 		{
-			FadeDim_Cnt[i]=GLOBAL_settings_ptr->FadingTime*callsinsecond/totalDeltaBrightness;
+			FadeDim_Cnt[i]=(GLOBAL_settings_ptr->FadingTime*callsinsecond)/totalDeltaBrightness;
 		}
 		else
 		{
