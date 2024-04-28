@@ -13,6 +13,7 @@ volatile unsigned char rCounter;  	//Bitte erhalten!
 
 volatile bool RTbit;				//Togglebit von RC5
 volatile int irCounter;
+volatile bool lastToggle;
 
 unsigned char SenderMode;			//Mode for sending commands to other devices
 
@@ -250,7 +251,7 @@ void SendBit1()
 }
 
 //Sends RC5 code
-void SendCommand(unsigned char address, unsigned char code, unsigned char toggle)
+void SendCommand(unsigned char address, unsigned char code, bool toggle)
 {
 	unsigned char mask;
 	unsigned char i;
@@ -263,13 +264,13 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 	SendBit1();	//2nd Startbit=1
 
 	//Togglebit
-	if(toggle==0)
+	if(toggle)
 	{
-		SendBit0();
+		SendBit1();
 	}
 	else
 	{
-		SendBit1();
+		SendBit0();
 	}
 
 	//5 Bit Address
@@ -310,14 +311,15 @@ void SendCommand(unsigned char address, unsigned char code, unsigned char toggle
 
 
 //Sends RC5 code if required, including repeats
-void SendRC5(unsigned char address, unsigned char code, unsigned char toggle, unsigned char requiredmode, unsigned repeats)
+void SendRC5(unsigned char address, unsigned char code, unsigned char requiredmode, unsigned repeats)
 {
+	lastToggle = !lastToggle;
 	unsigned char j;
 	if (SenderMode>=requiredmode)
 	{
 		for(j=1; j<=repeats; j++)
 		{
-			SendCommand(address, code, toggle);
+			SendCommand(address, code, lastToggle);
 			if (j<repeats)			//skip last pause in sequence of repeated commands
 			{
 				HAL_Delay(89);		//wait 88.9ms
